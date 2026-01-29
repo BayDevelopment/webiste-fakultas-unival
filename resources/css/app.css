@@ -1294,3 +1294,145 @@ a.btn.disabled {
     color: var(--bs-primary);
     transform: translateX(2px);
 }
+/* ===== WhatsApp Floating Widget ===== */
+.wa-widget {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 3000;
+    font-family:
+        system-ui,
+        -apple-system,
+        Segoe UI,
+        Roboto,
+        Arial,
+        sans-serif;
+}
+
+/* Toggle button (WA icon) */
+.wa-toggle {
+    width: 56px;
+    height: 56px;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    background: #25d366; /* WhatsApp green */
+    color: #fff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+    transition: transform 0.15s ease;
+}
+.wa-toggle:hover {
+    transform: translateY(-2px);
+}
+.wa-toggle i {
+    font-size: 28px;
+}
+
+/* Card */
+.wa-card {
+    width: 340px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+}
+
+/* Header */
+.wa-header {
+    background: #075e54; /* WhatsApp dark green */
+    color: #fff;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.wa-title {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+.wa-title small {
+    opacity: 0.85;
+    font-size: 12px;
+}
+
+/* Close button */
+.wa-close {
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    display: grid;
+    place-items: center;
+}
+.wa-close:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+/* Body (chat background ala WA) */
+.wa-body {
+    max-height: 280px;
+    overflow: auto;
+    padding: 12px;
+    background-color: #ece5dd;
+    background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+
+/* Bubbles */
+.wa-bubble {
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-size: 14px;
+    max-width: 85%;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+}
+.wa-left {
+    background: #fff;
+    border-top-left-radius: 6px;
+}
+.wa-right {
+    background: #dcf8c6; /* WhatsApp message green */
+    margin-left: auto;
+    border-top-right-radius: 6px;
+}
+
+/* Footer */
+.wa-footer {
+    padding: 10px;
+    background: #f0f0f0;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+.wa-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.wa-input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    padding: 10px 12px;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 14px;
+}
+.wa-send {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    background: #25d366;
+    color: #fff;
+    display: grid;
+    place-items: center;
+}
+.wa-send:hover {
+    filter: brightness(0.95);
+}

@@ -2,187 +2,207 @@
 
 @section('content')
     {{-- HERO --}}
-    <section class="hero-section py-5 text-white rounded-4 overflow-hidden position-relative">
-        {{-- Dot grid glow --}}
-        <div class="hero-dots position-absolute top-0 start-0 w-100 h-100"></div>
-
-        <div class="container py-4 position-relative" style="z-index: 1;">
-            <div class="row align-items-center g-4">
-                <div class="col-lg-8">
-                    <span class="badge bg-white text-dark mb-3 px-3 py-2 rounded-pill">
-                        Fakultas Ilmu Komputer
-                    </span>
-
-                    <h1 class="fw-bold mb-3 hero-title">
-                        Mencetak Talenta Digital
-                        <span class="d-block hero-title-sub">Untuk Masa Depan Indonesia</span>
-                    </h1>
+    @if ($hero)
+        <section class="hero-section py-5 text-white rounded-4 overflow-hidden position-relative">
 
 
-                    <p class="mb-4 hero-lead">
-                        Kurikulum relevan industri, dosen berpengalaman, riset & inovasi, serta komunitas teknologi yang
-                        aktif.
-                    </p>
+            {{-- Dot grid glow --}}
+            <div class="hero-dots position-absolute top-0 start-0 w-100 h-100"></div>
 
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="https://unival.siakadcloud.com/spmbfront/jalur-seleksi"
-                            class="btn btn-modern-primary fw-semibold px-3 py-2" target="_blank">
-                            <i class="fa-solid fa-pen-to-square me-2"></i> Daftar PMB
-                        </a>
+            <div class="container py-4 position-relative" style="z-index: 1;">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-8">
 
-                        <a href="#program" class="btn btn-modern-ghost fw-semibold px-3 py-2">
-                            <i class="fa-solid fa-graduation-cap me-2"></i> Lihat Program Studi
-                        </a>
+                        @if ($hero->badge_text)
+                            <span class="badge bg-white text-dark mb-3 px-3 py-2 rounded-pill">
+                                {{ $hero->badge_text }}
+                            </span>
+                        @endif
+
+                        <h1 class="fw-bold mb-3 hero-title">
+                            {{ $hero->title }}
+                            @if ($hero->subtitle)
+                                <span class="d-block hero-title-sub">{{ $hero->subtitle }}</span>
+                            @endif
+                        </h1>
+
+                        @if ($hero->description)
+                            <p class="mb-4 hero-lead">
+                                {{ $hero->description }}
+                            </p>
+                        @endif
+
+                        <div class="d-flex flex-wrap gap-2">
+                            @if (!empty($hero->primary_button_label))
+                                <a href="{{ $hero->primary_button_url ?: '#' }}"
+                                    class="btn btn-modern-primary fw-semibold px-3 py-2"
+                                    @if (!empty($hero->primary_button_url)) target="_blank" @endif>
+                                    <i class="fa-solid fa-pen-to-square me-2"></i>
+                                    {{ $hero->primary_button_label }}
+                                </a>
+                            @endif
+
+                            @if (!empty($hero->secondary_button_label))
+                                <a href="{{ $hero->secondary_button_url ?: '#program' }}"
+                                    class="btn btn-modern-ghost fw-semibold px-3 py-2">
+                                    <i class="fa-solid fa-graduation-cap me-2"></i>
+                                    {{ $hero->secondary_button_label }}
+                                </a>
+                            @endif
+                        </div>
+
+
+                        {{-- Statistik --}}
+                        <div class="row mt-5 g-3">
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
+                                    <div class="fw-bold fs-5">{{ $hero->laboratory_count }}</div>
+                                    <div class="opacity-75 small">Laboratorium</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
+                                    <div class="fw-bold fs-5">{{ $hero->lecturer_practitioner_count }}</div>
+                                    <div class="opacity-75 small">Dosen & Praktisi</div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
+                                    <div class="fw-bold fs-5">{{ $hero->industry_partner_count }}</div>
+                                    <div class="opacity-75 small">Mitra Industri</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-
-                    <div class="row mt-5 g-3">
-                        <div class="col-6 col-md-4">
-                            <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
-                                <div class="fw-bold fs-5">12+</div>
-                                <div class="opacity-75 small">Laboratorium</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
-                                <div class="fw-bold fs-5">40+</div>
-                                <div class="opacity-75 small">Dosen & Praktisi</div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-4">
-                            <div class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
-                                <div class="fw-bold fs-5">100+</div>
-                                <div class="opacity-75 small">Mitra Industri</div>
-                            </div>
+                    {{-- Gambar kanan --}}
+                    <div class="col-lg-4 d-none d-lg-block">
+                        <div class="position-relative p-3 rounded-4 border border-white border-opacity-10 overflow-hidden">
+                            <img src="{{ asset('storage/' . $hero->hero_image) }}" alt="Hero Image" class="w-100"
+                                style="height: 340px; object-fit: cover; border-radius: 16px;">
                         </div>
                     </div>
                 </div>
-
-                {{-- kanan dikosongkan / bisa isi gambar kampus nanti --}}
-                <div class="col-lg-4 d-none d-lg-block">
-                    <div
-                        class="position-relative p-3 rounded-4 bg-opacity-05 border border-white border-opacity-10 overflow-hidden">
-                        <img src="{{ asset('images/section-one.svg') }}" alt="Ilustrasi Fakultas Ilmu Komputer"
-                            class="w-100" style="height: 340px; object-fit: cover; border-radius: 16px;">
-                        <div class="position-absolute top-0 start-0 w-100 h-100"
-                            style="background: linear-gradient(180deg, rgba(13,110,253,.12), rgba(11,18,32,.45)); border-radius: 16px;">
-                        </div>
-                    </div>
-                </div>
-
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
+
 
 
     {{-- ABOUT --}}
     <section class="py-5" id="tentang">
         <div class="container">
+
             <div class="row g-4 align-items-center">
-                <div class="col-lg-6">
-                    <h2 class="fw-bold mb-3">Tentang Fakultas</h2>
-                    <p class="text-muted mb-4">
-                        Fakultas Ilmu Komputer berkomitmen membangun ekosistem pembelajaran modern: berbasis proyek,
-                        kolaboratif, dan relevan dengan kebutuhan industri. Mahasiswa didorong aktif dalam riset,
-                        kompetisi, dan pengembangan produk digital.
-                    </p>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="p-4 border rounded-4 h-100">
-                                <div class="fw-semibold">Visi</div>
-                                <div class="text-muted small mt-1">Menjadi Fakultas Yang Unggul Dalam Bidang Ilmu Komputer
-                                    Melingkupi Tri Dharma Perguruan Tinggi Sebagai Upaya Meningkatkan Kesejahteraan Dan
-                                    Kemajuan Masyarakat Tahun 2030 di Banten.
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="p-4 border rounded-4 h-100">
-                                <div class="fw-semibold">Misi</div>
-                                <div class="text-muted small mt-1">1.Menyelenggarakan Pendidikan, Penelitian Dan Pengabdian
-                                    Kepada Masyarakat .
+                @if ($about)
 
-                                    2.Membentuk Profil Lulusan Yang Adaptif, Inovatif Dan Kolaboratif Dalam Rangka
-                                    Menghadapi Era Digital
+                    <div class="col-lg-6">
+                        <h2 class="fw-bold mb-3">
+                            {{ $about->judul_halaman }}
+                        </h2>
 
-                                    3.Memberdayakan Dan Memajukan Masyarakat Melalui Penerapan Teknologi Informasi.
+                        <p class="text-muted mb-4">
+                            {{ $about->subjudul_halaman }}
+                        </p>
+
+                        @if ($visi)
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-4 border rounded-4 h-100">
+                                        <div class="fw-semibold">
+                                            {{ $visi->judul }}
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            {{ $visi->deskripsi }}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+
+                                <div class="col-md-6">
+                                    <div class="p-4 border rounded-4 h-100">
+                                        <div class="fw-semibold">
+                                            {{ $visi->subjudul }}
+                                        </div>
+
+                                        @if ($misi->isNotEmpty())
+                                            <ul class="about-list text-muted mb-0">
+                                                @foreach ($misi as $item)
+                                                    <li>{{ $item->title }}</li>
+                                                @endforeach
+                                            </ul>
+                                        @else
+                                            <p class="text-muted mb-0">Belum ada misi.</p>
+                                        @endif
+                                    </div>
+                                </div>
+                        @endif
                     </div>
-                </div>
+                @endif
+            </div>
 
+            @if ($profilKeunggulan->isNotEmpty())
                 <div class="col-lg-6">
                     <div class="p-4 p-md-5 bg-light rounded-4 h-100">
-                        <h5 class="fw-bold mb-3">Kenapa Pilih FIK?</h5>
-                        <ul class="list-unstyled mb-0">
-                            <li class="d-flex gap-3 mb-3">
-                                <span class="badge text-bg-primary rounded-pill px-3 py-2">01</span>
-                                <div>
-                                    <div class="fw-semibold">Project-based learning</div>
-                                    <div class="text-muted small">Belajar lewat studi kasus nyata & portofolio.</div>
+                        <h5 class="fw-bold mb-3">
+                            Kenapa Pilih FIK
+                        </h5>
+
+                        <div class="row g-3">
+                            @foreach ($profilKeunggulan as $item)
+                                <div class="col-6">
+                                    <div class="about-pill">
+                                        <i class="{{ $item->icon }}"></i>
+                                        {{ $item->judul }}
+                                    </div>
                                 </div>
-                            </li>
-                            <li class="d-flex gap-3 mb-3">
-                                <span class="badge text-bg-primary rounded-pill px-3 py-2">02</span>
-                                <div>
-                                    <div class="fw-semibold">Koneksi industri</div>
-                                    <div class="text-muted small">Magang, guest lecture, kolaborasi riset.</div>
-                                </div>
-                            </li>
-                            <li class="d-flex gap-3">
-                                <span class="badge text-bg-primary rounded-pill px-3 py-2">03</span>
-                                <div>
-                                    <div class="fw-semibold">Komunitas aktif</div>
-                                    <div class="text-muted small">Himpunan, lab, kompetisi, dan event teknologi.</div>
-                                </div>
-                            </li>
-                        </ul>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
+
         </div>
+        </div>
+
     </section>
+
+
 
     {{-- PROGRAM STUDI --}}
     <section class="py-5 bg-light" id="program">
         <div class="container">
-            <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
-                <div>
-                    <h2 class="fw-bold mb-1">Program Studi</h2>
-                    <p class="text-muted mb-0">Pilih jalur sesuai minat & karier masa depanmu.</p>
-                </div>
-                <a href="#pmb" class="btn btn-info-pmb fw-semibold px-3 py-2">
-                    <i class="fa-solid fa-circle-info me-2"></i> Info Pendaftaran
-                </a>
+            @if ($TentangKami)
+                <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+                    <div>
+                        <h2 class="fw-bold mb-1">{{ $TentangKami->judul }}</h2>
+                        <p class="text-muted mb-0">{{ $TentangKami->title }}</p>
+                    </div>
+                    <a href="{{ $TentangKami->link }}" class="btn btn-info-pmb fw-semibold px-3 py-2">
+                        <i class="fa-solid fa-circle-info me-2"></i> {{ $TentangKami->subtitle_link }}
+                    </a>
 
-            </div>
+                </div>
+            @endif
 
             <div class="row g-4">
-                <div class="col-md-6 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <span class="badge text-bg-primary mb-3">S1</span>
-                            <h5 class="fw-bold">Teknik Informatika</h5>
-                            <p class="text-muted">Software engineering, cloud, AI, dan pengembangan produk digital.</p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge text-bg-light text-dark border">Web</span>
-                                <span class="badge text-bg-light text-dark border">Mobile</span>
-                                <span class="badge text-bg-light text-dark border">Cloud</span>
+                @if ($JurusanHome)
+                    @foreach ($JurusanHome as $Item)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 h-100">
+                                <div class="card-body p-4">
+                                    <span class="badge text-bg-primary mb-3">{{ $Item->jenjang }}</span>
+                                    <h5 class="fw-bold">{{ $Item->nama }}</h5>
+                                    <p class="text-muted">{{ $Item->deskripsi_singkat }}</p>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach ($Item->tags as $item)
+                                            <span class="badge text-bg-light text-dark border">{{ $item }}</span>
+                                        @endforeach
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <span class="badge text-bg-dark mb-3">D3</span>
-                            <h5 class="fw-bold">Manajemen Informatika</h5>
-                            <p class="text-muted">Praktik intensif untuk kebutuhan dunia kerja & industri.</p>
-                        </div>
-                    </div>
-                </div>
+                    @endforeach
+                @endif
             </div>
         </div>
     </section>
@@ -201,38 +221,44 @@
             </div>
 
             <div class="row g-4">
-                <div class="col-md-6 col-lg-4">
-                    <div class="card rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <div class="text-muted small mb-2">Seminar • 20 Jan 2026</div>
-                            <h5 class="fw-bold">Roadmap Karier Data & AI</h5>
-                            <p class="text-muted mb-0">Kupas skill yang dibutuhkan industri dan tips portofolio.</p>
+                <!-- CARD -->
+                @if ($Kegiatan)
+                    @foreach ($Kegiatan as $k)
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card rounded-4 h-100 overflow-hidden">
+                                <img src="{{ asset('storage/' . $k->cover_image) }}" class="img-fluid" alt="Kegiatan">
+                                <div class="card-body p-4">
+                                    <div class="text-muted small mb-2">{{ $k->type }} • {{ $k->activty_date }}</div>
+                                    <h5 class="fw-bold">{{ $k->title }}</h5>
+                                    <p class="text-muted mb-0">
+                                        {{ $k->excerpt }}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4">
-                    <div class="card rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <div class="text-muted small mb-2">Kompetisi • 18 Jan 2026</div>
-                            <h5 class="fw-bold">Juara Hackathon Tingkat Nasional</h5>
-                            <p class="text-muted mb-0">Tim mahasiswa mengembangkan aplikasi layanan publik.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-4">
-                    <div class="card rounded-4 h-100">
-                        <div class="card-body p-4">
-                            <div class="text-muted small mb-2">Workshop • 15 Jan 2026</div>
-                            <h5 class="fw-bold">Bootcamp Web Development</h5>
-                            <p class="text-muted mb-0">Belajar fullstack modern dari dasar sampai deployment.</p>
-                        </div>
-                    </div>
-                </div>
+                    @endforeach
+                @endif
             </div>
         </div>
     </section>
+    @push('styles')
+        <style>
+            #kegiatan .card img {
+                height: 200px;
+                object-fit: cover;
+            }
+
+            #kegiatan .card {
+                transition: transform .2s ease, box-shadow .2s ease;
+            }
+
+            #kegiatan .card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
+            }
+        </style>
+    @endpush
+
 
     {{-- PMB CTA --}}
     <section class="py-5" id="pmb">
