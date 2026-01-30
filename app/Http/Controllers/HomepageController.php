@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\about_pages_model;
+use App\Models\ContactSetting;
 use App\Models\HeroSectionModel;
 use App\Models\JurusanHomeProdiModel;
 use App\Models\KegiatanModel;
 use App\Models\MisiModel;
 use App\Models\ProdiHomeModel;
 use App\Models\ProfilKeunggulanModel;
+use App\Models\TestimonialModel;
 use App\Models\VisiModel;
 use Illuminate\Http\Request;
 
@@ -31,6 +33,8 @@ class HomepageController extends Controller
         $tentangkami = ProdiHomeModel::where('status_aktif', true)->orderBy('id')->first();
         $jurusanhome = JurusanHomeProdiModel::where('status_aktif', true)->orderBy('id')->get();
         $kegiatan = KegiatanModel::where('status_aktif', true)->orderBy('id')->get();
+        $testimoni = TestimonialModel::where('is_active', true)->orderBy('id')->get();
+        $contactSet = ContactSetting::where('is_active', true)->first();
 
         return view('pages.index', [
             'title'   => 'Beranda | Fakultas Ilmu Komputer',
@@ -43,6 +47,8 @@ class HomepageController extends Controller
             'TentangKami' => $tentangkami,
             'JurusanHome' => $jurusanhome,
             'Kegiatan' => $kegiatan,
+            'Testimoni' => $testimoni,
+            'Contact' => $contactSet
         ]);
     }
 }
