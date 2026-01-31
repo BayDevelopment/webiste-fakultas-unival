@@ -19,4 +19,9 @@ class ProdiHomeModel extends Model
     protected $casts = [
         'status_aktif' => 'boolean'
     ];
+
+    public function scopeAktif($query)
+    {
+        return $query->where('aktif', true);
+    }
 }

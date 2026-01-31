@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\Kegiatans\Pages;
+namespace App\Filament\Resources\Faqs\Pages;
 
-use App\Filament\Resources\Kegiatans\KegiatanResource;
+use App\Filament\Resources\Faqs\FaqsResource;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\Carbon;
 
-class CreateKegiatan extends CreateRecord
+class CreateFaqs extends CreateRecord
 {
-    protected static string $resource = KegiatanResource::class;
+    protected static string $resource = FaqsResource::class;
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
@@ -18,7 +17,7 @@ class CreateKegiatan extends CreateRecord
     {
         return Notification::make()
             ->title('Berhasil')
-            ->body('Data Kegiatan berhasil ditambahkan.')
+            ->body('Data Faqs berhasil ditambahkan.')
             ->success();
     }
 
@@ -36,15 +35,5 @@ class CreateKegiatan extends CreateRecord
                 ->url($this->getResource()::getUrl('index'))
                 ->icon('heroicon-o-x-mark')
         ];
-    }
-
-    protected function mutateFormDataBeforeCreate(array $data): array
-    {
-        if (!empty($data['activity_date'])) {
-            $date = Carbon::parse($data['activity_date']);
-            $data['status_kegiatan'] = ($date->isFuture() || $date->isToday()) ? 'mendatang' : 'selesai';
-        }
-
-        return $data;
     }
 }

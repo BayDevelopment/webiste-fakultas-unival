@@ -1,64 +1,28 @@
-{{-- resources/views/kegiatan.blade.php --}}
 @extends('layouts.app')
 
 @section('content')
     @php
-        // slug penting buat link route/anchor (kalau page kegiatan per-prodi)
-        $slug = $slug ?? (request()->route('slug') ?? 'kegiatan');
+        use Illuminate\Support\Carbon;
+        use Illuminate\Support\Facades\Route;
 
-        // Data dari controller (fallback aman)
-        // Struktur yang disarankan:
-        // $kegiatan[] = [
-        //   'id' => 1,
-        //   'judul' => 'Seminar ...',
-        //   'tanggal' => '2026-02-01', // Y-m-d
-        //   'waktu' => '09:00 - 12:00',
-        //   'lokasi' => 'Aula ...',
-        //   'kategori' => 'Seminar',
-        //   'status' => 'upcoming'|'done',
-        //   'ringkas' => 'Deskripsi singkat...',
-        //   'cover' => 'https://...jpg' atau asset('...'),
-        //   'link' => route('kegiatan.show', [$slug, $id]) atau '#',
-        //   'link_daftar' => 'https://...' atau null,
-        // ];
-        $kegiatan = $kegiatan ?? [];
-        $kategoriList = $kategoriList ?? collect($kegiatan)->pluck('kategori')->filter()->unique()->values()->all();
+        // dari controller (sudah gabungan mendatang + selesai, max 3)
+        $kegiatan = $kegiatan ?? collect();
 
-        $upcoming = collect($kegiatan)
-            ->filter(fn($k) => ($k['status'] ?? 'upcoming') === 'upcoming')
-            ->sortBy(fn($k) => $k['tanggal'] ?? '9999-12-31')
-            ->values()
-            ->all();
+        $pageTitle = $navlink ?? 'Kegiatan';
+        $pageTagline = 'Agenda, seminar, workshop, dan kegiatan terbaru.';
 
-        $done = collect($kegiatan)
-            ->filter(fn($k) => ($k['status'] ?? 'upcoming') === 'done')
-            ->sortByDesc(fn($k) => $k['tanggal'] ?? '0000-01-01')
-            ->values()
-            ->all();
-
-        $gallery = $gallery ?? []; // optional: ['img'=>..., 'caption'=>...]
-        $faq = $faq ?? [
-            [
-                'q' => 'Bagaimana cara daftar kegiatan?',
-                'a' => 'Klik tombol "Daftar" pada kartu kegiatan yang tersedia, lalu isi formulir pendaftaran.',
-            ],
-            [
-                'q' => 'Apakah ada sertifikat?',
-                'a' => 'Tergantung jenis kegiatan. Informasi sertifikat dicantumkan pada detail kegiatan.',
-            ],
-            ['q' => 'Di mana informasi terbaru diumumkan?', 'a' => 'Pantau halaman ini atau kanal resmi kampus/prodi.'],
-        ];
-
-        // Link kalender: kalau route ada, pakai itu. Kalau belum, fallback ke section
-        $kalenderUrl = \Illuminate\Support\Facades\Route::has('kegiatan.kalender')
-            ? route('kegiatan.kalender', $slug)
-            : '#kalender';
-
-        $pageTitle = $pageTitle ?? 'Kegiatan';
-        $pageTagline = $pageTagline ?? 'Agenda, seminar, workshop, dan kegiatan terbaru.';
         $heroCover = $heroCover ?? asset('images/kegiatan-cover.jpg');
         $heroCoverFallback =
             'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1400&q=70';
+
+        $detailUrl = function ($id) {
+            return Route::has('kegiatan.show') ? route('kegiatan.show', $id) : url('/kegiatan/' . $id);
+        };
+
+        // kalender opsional (anchor saja, bukan route)
+        $kalenderUrl = '#kalender';
+
+        $today = Carbon::today();
     @endphp
 
     <main class="py-5 prodi-page">
@@ -83,8 +47,8 @@
                 </div>
 
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="#mendatang" class="btn btn-see-all fw-semibold px-3 py-2">
-                        Kegiatan Mendatang <i class="fa-solid fa-arrow-right ms-2"></i>
+                    <a href="#kegiatan" class="btn btn-see-all fw-semibold px-3 py-2">
+                        Lihat Kegiatan <i class="fa-solid fa-arrow-right ms-2"></i>
                     </a>
 
                     <a href="{{ $kalenderUrl }}" class="btn btn-cta fw-semibold px-4 py-2">
@@ -117,46 +81,53 @@
                         </h2>
 
                         <p class="text-muted mb-4">
-                            Temukan seminar, workshop, pelatihan, dan agenda kampus lainnya. Gunakan filter kategori atau
-                            cari
-                            judul kegiatan untuk menemukan yang kamu butuhkan.
+                            Menampilkan <span class="fw-semibold">maksimal 3 kegiatan</span> (gabungan
+                            <span class="fw-semibold">mendatang + selesai</span>) yang aktif.
                         </p>
 
+                        {{-- STAT BOX (pakai data controller: semua data aktif, bukan hanya yang tampil) --}}
                         <div class="row g-3">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="prodi-stat">
-                                    <div class="prodi-stat-num">{{ count($upcoming) ?: '—' }}</div>
-                                    <div class="text-muted small">Kegiatan Mendatang</div>
+                                    <div class="prodi-stat-num">{{ $jumlahMendatang ?? '—' }}</div>
+                                    <div class="text-muted small">Mendatang</div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="prodi-stat">
-                                    <div class="prodi-stat-num">{{ count($kegiatan) ?: '—' }}</div>
-                                    <div class="text-muted small">Total Kegiatan</div>
+                                    <div class="prodi-stat-num">{{ $jumlahSelesai ?? '—' }}</div>
+                                    <div class="text-muted small">Selesai</div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="prodi-stat">
-                                    <div class="prodi-stat-num">{{ count($kategoriList) ?: '—' }}</div>
+                                    <div class="prodi-stat-num">{{ $totalKegiatan ?? '—' }}</div>
+                                    <div class="text-muted small">Total</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="prodi-stat">
+                                    <div class="prodi-stat-num">{{ $totalKategori ?? '—' }}</div>
                                     <div class="text-muted small">Kategori</div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="d-flex flex-wrap gap-2 mt-4">
-                            <a href="#semua" class="btn btn-modern-primary fw-semibold px-3 py-2">
-                                <i class="fa-solid fa-layer-group me-2"></i> Lihat Semua
+                            <a href="#kegiatan" class="btn btn-modern-primary fw-semibold px-3 py-2">
+                                <i class="fa-solid fa-layer-group me-2"></i> Lihat Kegiatan
                             </a>
-                            <a href="#galeri" class="btn btn-see-all fw-semibold px-3 py-2">
-                                <i class="fa-solid fa-images me-2"></i> Dokumentasi
+                            <a href="#kalender" class="btn btn-see-all fw-semibold px-3 py-2">
+                                <i class="fa-solid fa-calendar-days me-2"></i> Cek Kalender
                             </a>
                         </div>
 
                         <div class="prodi-mini mt-4">
-                            <div class="prodi-mini-item"><i class="fa-solid fa-circle-check"></i> Info cepat & ringkas</div>
-                            <div class="prodi-mini-item"><i class="fa-solid fa-circle-check"></i> Link daftar langsung</div>
-                            <div class="prodi-mini-item"><i class="fa-solid fa-circle-check"></i> Jadwal mudah dipantau
+                            <div class="prodi-mini-item"><i class="fa-solid fa-circle-check"></i> Hanya yang aktif tampil
                             </div>
+                            <div class="prodi-mini-item"><i class="fa-solid fa-circle-check"></i> Mendatang + selesai
+                                digabung</div>
+                            <div class="prodi-mini-item"><i class="fa-solid fa-circle-check"></i> Ringkas & jelas</div>
                         </div>
                     </div>
                 </div>
@@ -172,7 +143,7 @@
                                 <div class="prodi-float-ic"><i class="fa-solid fa-bolt"></i></div>
                                 <div>
                                     <div class="fw-bold">Stay updated</div>
-                                    <div class="text-muted small">Agenda resmi & informasi pendaftaran.</div>
+                                    <div class="text-muted small">Agenda resmi & info kegiatan terbaru.</div>
                                 </div>
                             </div>
                         </div>
@@ -180,268 +151,105 @@
                 </div>
             </section>
 
-            {{-- Quick Nav --}}
-            <section class="mb-4">
-                <div class="prodi-nav p-3">
-                    <a class="prodi-nav-link" href="#mendatang"><i class="fa-solid fa-calendar-check me-2"></i>Mendatang</a>
-                    <a class="prodi-nav-link" href="#semua"><i class="fa-solid fa-list me-2"></i>Semua Kegiatan</a>
-                    <a class="prodi-nav-link" href="#kalender"><i class="fa-solid fa-calendar-days me-2"></i>Kalender</a>
-                    <a class="prodi-nav-link" href="#galeri"><i class="fa-solid fa-images me-2"></i>Galeri</a>
-                    <a class="prodi-nav-link" href="#faq"><i class="fa-solid fa-circle-question me-2"></i>FAQ</a>
-                </div>
-            </section>
-
-            {{-- KEGIATAN MENDATANG (carousel) --}}
-            <section id="mendatang" class="mb-5">
+            {{-- KEGIATAN (maks 3 item gabungan) --}}
+            <section id="kegiatan" class="mb-5">
                 <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
                     <div>
-                        <h2 class="fw-bold mb-1 prodi-h3">Kegiatan Mendatang</h2>
-                        <p class="text-muted mb-0">Agenda yang akan berlangsung dalam waktu dekat.</p>
-                    </div>
-
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-carousel-nav" type="button" data-kegiatan-dir="prev"
-                            aria-label="Sebelumnya">
-                            <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-                        <button class="btn btn-carousel-nav" type="button" data-kegiatan-dir="next"
-                            aria-label="Selanjutnya">
-                            <i class="fa-solid fa-chevron-right"></i>
-                        </button>
+                        <h2 class="fw-bold mb-1 prodi-h3">Kegiatan Terbaru</h2>
+                        <p class="text-muted mb-0">Menampilkan maksimal 3 kegiatan aktif (mendatang + selesai).</p>
                     </div>
                 </div>
 
-                @if (count($upcoming))
-                    <div class="team-wrap">
-                        <div class="team-track" id="kegiatanTrack">
-                            @foreach ($upcoming as $k)
-                                @php
-                                    $tgl = $k['tanggal'] ?? null;
-                                    $tglText = $tgl ? \Carbon\Carbon::parse($tgl)->translatedFormat('d M Y') : 'TBA';
-                                    $kat = $k['kategori'] ?? 'Umum';
-                                    $cover =
-                                        $k['cover'] ??
-                                        'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=70';
-                                    $link = $k['link'] ?? '#';
-                                    $daftar = $k['link_daftar'] ?? null;
-                                @endphp
+                @if ($kegiatan->count())
+                    <div class="row g-4">
+                        @foreach ($kegiatan as $k)
+                            @php
+                                // Karena di model sudah cast date, aman pakai $k->activity_date sebagai Carbon
+                                $tgl = $k->activity_date ?? null;
+                                $tglText = $tgl ? Carbon::parse($tgl)->translatedFormat('d M Y') : 'TBA';
 
-                                <article class="team-card kegiatan-card" data-kategori="{{ strtolower($kat) }}"
-                                    data-judul="{{ strtolower($k['judul'] ?? '') }}">
-                                    <div class="about-team p-4">
-                                        <div class="kegiatan-cover mb-3"
-                                            style="border-radius:16px; overflow:hidden; position:relative;">
-                                            <img src="{{ $cover }}" alt="{{ $k['judul'] ?? 'Kegiatan' }}"
-                                                style="width:100%; height:180px; object-fit:cover;"
-                                                onerror="this.src='{{ $heroCoverFallback }}'; this.onerror=null;">
-                                            <div
-                                                style="position:absolute; inset:0; background:linear-gradient(180deg, rgba(13,110,253,.10), rgba(11,18,32,.55));">
-                                            </div>
-                                            <span class="badge prodi-badge"
-                                                style="position:absolute; left:12px; bottom:12px;">
-                                                <i class="fa-solid fa-tag me-2"></i>{{ $kat }}
+                                $kat = $k->type ?? 'Umum';
+
+                                $cover = !empty($k->cover_image)
+                                    ? asset('storage/' . $k->cover_image)
+                                    : 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=70';
+
+                                $link = $detailUrl($k->id);
+
+                                // accessor model kamu sudah auto, tapi kita tetap aman:
+                                $badgeBg = !empty($k->warna_kalender)
+                                    ? 'background:' . e($k->warna_kalender) . ';'
+                                    : '';
+
+                                // ✅ SELARAS controller: mendatang kalau >= hari ini (today termasuk mendatang)
+                                $isUpcoming = $tgl ? Carbon::parse($tgl)->gte($today) : null;
+                            @endphp
+
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card rounded-4 h-100 overflow-hidden border-0 shadow-sm kegiatan-card">
+                                    <div class="position-relative" style="height:210px; background:#f4f6f8;">
+                                        <img src="{{ $cover }}" class="w-100 h-100 object-fit-cover"
+                                            alt="{{ $k->title ?? 'Kegiatan' }}"
+                                            onerror="this.src='{{ $heroCoverFallback }}'; this.onerror=null;">
+                                        <div class="position-absolute top-0 start-0 w-100 h-100"
+                                            style="background:linear-gradient(to bottom, rgba(0,0,0,.05), rgba(0,0,0,.55));">
+                                        </div>
+
+                                        <div class="position-absolute top-0 start-0 p-3 d-flex gap-2 flex-wrap">
+                                            <span class="badge rounded-pill px-3 py-2 prodi-badge"
+                                                style="{{ $badgeBg }}">
+                                                <i class="fa-solid fa-tag me-1"></i> {{ $kat }}
                                             </span>
-                                        </div>
 
-                                        <div class="fw-bold mb-1" style="line-height:1.25;">
-                                            {{ $k['judul'] ?? 'Judul Kegiatan' }}
-                                        </div>
-
-                                        <div class="text-muted small mb-2">
-                                            <i class="fa-regular fa-calendar me-2"></i>{{ $tglText }}
-                                            @if (!empty($k['waktu']))
-                                                <span class="mx-2">•</span>
-                                                <i class="fa-regular fa-clock me-2"></i>{{ $k['waktu'] }}
+                                            @if (!empty($k->status_kegiatan))
+                                                <span class="badge rounded-pill px-3 py-2 prodi-badge">
+                                                    <i class="fa-solid fa-flag me-1"></i> {{ $k->status_kegiatan }}
+                                                </span>
                                             @endif
-                                        </div>
 
-                                        @if (!empty($k['lokasi']))
-                                            <div class="text-muted small mb-3">
-                                                <i class="fa-solid fa-location-dot me-2"></i>{{ $k['lokasi'] }}
-                                            </div>
-                                        @endif
-
-                                        <p class="text-muted mb-3"
-                                            style="display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
-                                            {{ $k['ringkas'] ?? 'Deskripsi singkat kegiatan.' }}
-                                        </p>
-
-                                        <div class="d-flex gap-2 flex-wrap">
-                                            <a href="{{ $link }}"
-                                                class="btn btn-modern-primary fw-semibold px-3 py-2">
-                                                Detail <i class="fa-solid fa-arrow-right ms-2"></i>
-                                            </a>
-                                            @if ($daftar)
-                                                <a href="{{ $daftar }}" class="btn btn-cta fw-semibold px-3 py-2">
-                                                    Daftar <i class="fa-solid fa-pen-to-square ms-2"></i>
-                                                </a>
+                                            @if (!is_null($isUpcoming))
+                                                <span
+                                                    class="badge rounded-pill px-3 py-2 {{ $isUpcoming ? 'bg-success' : 'bg-dark' }}">
+                                                    <i
+                                                        class="fa-solid {{ $isUpcoming ? 'fa-clock' : 'fa-check' }} me-1"></i>
+                                                    {{ $isUpcoming ? 'Mendatang' : 'Selesai' }}
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
-                                </article>
-                            @endforeach
-                        </div>
+
+                                    <div class="card-body p-4">
+                                        <div class="text-muted small mb-2">
+                                            <i class="fa-regular fa-calendar me-1"></i> {{ $tglText }}
+                                        </div>
+
+                                        <h5 class="fw-bold text-dark mb-2"
+                                            style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
+                                            {{ $k->title ?? 'Judul Kegiatan' }}
+                                        </h5>
+
+                                        @if (!empty($k->excerpt))
+                                            <p class="text-muted mb-0"
+                                                style="display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
+                                                {{ $k->excerpt }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <div class="prodi-card p-4">
                         <div class="d-flex align-items-center gap-3">
                             <div class="prodi-ic"><i class="fa-solid fa-circle-info"></i></div>
                             <div>
-                                <div class="prodi-card-title">Belum ada kegiatan mendatang</div>
-                                <div class="text-muted">Nanti kalau sudah ada, bakal tampil di sini.</div>
+                                <div class="prodi-card-title">Belum ada kegiatan</div>
+                                <div class="text-muted">Kegiatan akan muncul di sini jika sudah diaktifkan.</div>
                             </div>
                         </div>
                     </div>
                 @endif
-            </section>
-
-            {{-- SEMUA KEGIATAN (filter + list) --}}
-            <section id="semua" class="mb-5">
-                <div class="row g-4">
-                    <div class="col-lg-4">
-                        <div class="prodi-card p-4 h-100">
-                            <div class="prodi-card-head mb-3">
-                                <div class="prodi-ic"><i class="fa-solid fa-filter"></i></div>
-                                <div>
-                                    <div class="prodi-card-title">Filter Kegiatan</div>
-                                    <div class="prodi-card-sub">Cari cepat berdasarkan judul & kategori</div>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="text-muted small mb-2 d-block">Cari judul</label>
-                                <input id="kegiatanSearch" type="text" class="form-control"
-                                    placeholder="Contoh: seminar, workshop, lomba..." autocomplete="off">
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="text-muted small mb-2 d-block">Kategori</label>
-                                <div class="d-flex flex-wrap gap-2" id="kategoriPills">
-                                    <button type="button"
-                                        class="btn btn-see-all fw-semibold px-3 py-2 kategori-pill active" data-kat="all">
-                                        Semua
-                                    </button>
-                                    @foreach ($kategoriList as $kat)
-                                        <button type="button" class="btn btn-see-all fw-semibold px-3 py-2 kategori-pill"
-                                            data-kat="{{ strtolower($kat) }}">
-                                            {{ $kat }}
-                                        </button>
-                                    @endforeach
-                                </div>
-                            </div>
-
-                            <div class="text-muted small">
-                                Tips: klik kategori + ketik kata kunci biar hasilnya makin spesifik.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-lg-8">
-                        <div class="prodi-card p-4 p-lg-5">
-                            <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-                                <div class="prodi-card-head mb-0">
-                                    <div class="prodi-ic"><i class="fa-solid fa-list"></i></div>
-                                    <div>
-                                        <div class="prodi-card-title">Daftar Kegiatan</div>
-                                        <div class="prodi-card-sub">Mendatang & dokumentasi kegiatan sebelumnya</div>
-                                    </div>
-                                </div>
-
-                                <span class="text-muted small">
-                                    <span id="kegiatanCount">{{ count($kegiatan) }}</span> kegiatan
-                                </span>
-                            </div>
-
-                            <div class="row g-3" id="kegiatanGrid">
-                                @foreach ($kegiatan as $k)
-                                    @php
-                                        $tgl = $k['tanggal'] ?? null;
-                                        $tglText = $tgl
-                                            ? \Carbon\Carbon::parse($tgl)->translatedFormat('d M Y')
-                                            : 'TBA';
-                                        $kat = $k['kategori'] ?? 'Umum';
-                                        $cover =
-                                            $k['cover'] ??
-                                            'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1200&q=70';
-                                        $link = $k['link'] ?? '#';
-                                        $daftar = $k['link_daftar'] ?? null;
-                                        $status = $k['status'] ?? 'upcoming';
-                                    @endphp
-
-                                    <div class="col-12">
-                                        <article class="prodi-file kegiatan-item" data-kategori="{{ strtolower($kat) }}"
-                                            data-judul="{{ strtolower($k['judul'] ?? '') }}"
-                                            data-status="{{ $status }}">
-                                            <div class="d-flex gap-3 align-items-start">
-                                                <div style="width:92px; flex:0 0 92px;">
-                                                    <img src="{{ $cover }}" alt="{{ $k['judul'] ?? 'Kegiatan' }}"
-                                                        style="width:92px; height:92px; object-fit:cover; border-radius:14px;"
-                                                        onerror="this.src='{{ $heroCoverFallback }}'; this.onerror=null;">
-                                                </div>
-
-                                                <div class="flex-grow-1">
-                                                    <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
-                                                        <span class="badge prodi-badge">
-                                                            <i class="fa-solid fa-tag me-2"></i>{{ $kat }}
-                                                        </span>
-                                                        <span class="badge prodi-badge">
-                                                            @if ($status === 'done')
-                                                                <i class="fa-solid fa-check me-2"></i>Selesai
-                                                            @else
-                                                                <i class="fa-solid fa-clock me-2"></i>Mendatang
-                                                            @endif
-                                                        </span>
-                                                    </div>
-
-                                                    <div class="fw-bold mb-1">{{ $k['judul'] ?? 'Judul Kegiatan' }}</div>
-
-                                                    <div class="text-muted small mb-2">
-                                                        <i class="fa-regular fa-calendar me-2"></i>{{ $tglText }}
-                                                        @if (!empty($k['waktu']))
-                                                            <span class="mx-2">•</span>
-                                                            <i class="fa-regular fa-clock me-2"></i>{{ $k['waktu'] }}
-                                                        @endif
-                                                        @if (!empty($k['lokasi']))
-                                                            <span class="mx-2">•</span>
-                                                            <i
-                                                                class="fa-solid fa-location-dot me-2"></i>{{ $k['lokasi'] }}
-                                                        @endif
-                                                    </div>
-
-                                                    @if (!empty($k['ringkas']))
-                                                        <div class="text-muted small"
-                                                            style="display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">
-                                                            {{ $k['ringkas'] }}
-                                                        </div>
-                                                    @endif
-
-                                                    <div class="d-flex gap-2 flex-wrap mt-3">
-                                                        <a href="{{ $link }}"
-                                                            class="btn btn-modern-primary fw-semibold px-3 py-2">
-                                                            Detail <i class="fa-solid fa-arrow-right ms-2"></i>
-                                                        </a>
-                                                        @if ($daftar && $status !== 'done')
-                                                            <a href="{{ $daftar }}"
-                                                                class="btn btn-cta fw-semibold px-3 py-2">
-                                                                Daftar <i class="fa-solid fa-pen-to-square ms-2"></i>
-                                                            </a>
-                                                        @endif
-                                                    </div>
-                                                </div>
-
-                                                <i class="fa-solid fa-arrow-right text-muted"></i>
-                                            </div>
-                                        </article>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            <div class="text-muted small mt-3" id="kegiatanEmpty" style="display:none;">
-                                Tidak ada kegiatan yang cocok dengan filter kamu.
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </section>
 
             {{-- KALENDER --}}
@@ -455,282 +263,363 @@
                                 <div class="prodi-card-sub">Pantau jadwal dalam format kalender</div>
                             </div>
                         </div>
-
-                        @if (\Illuminate\Support\Facades\Route::has('kegiatan.kalender'))
-                            <a href="{{ route('kegiatan.kalender', $slug) }}"
-                                class="btn btn-see-all fw-semibold px-3 py-2">
-                                Buka Kalender <i class="fa-solid fa-arrow-right ms-2"></i>
-                            </a>
-                        @endif
                     </div>
 
-                    {{-- Opsi 1: embed google calendar (controller: $googleCalendarEmbed) --}}
-                    @if (!empty($googleCalendarEmbed))
-                        <div class="ratio ratio-16x9">
-                            {!! $googleCalendarEmbed !!}
-                        </div>
-                    @else
-                        {{-- Opsi 2: list ringkas (tanpa embed) --}}
-                        <div class="row g-3">
-                            @forelse (array_slice($upcoming, 0, 6) as $k)
-                                @php
-                                    $tgl = $k['tanggal'] ?? null;
-                                    $tglText = $tgl ? \Carbon\Carbon::parse($tgl)->translatedFormat('l, d M Y') : 'TBA';
-                                @endphp
-                                <div class="col-md-6">
-                                    <div class="prodi-pill">
-                                        <i class="fa-regular fa-calendar"></i>
-                                        <div class="d-flex flex-column">
-                                            <span class="fw-semibold">{{ $k['judul'] ?? 'Kegiatan' }}</span>
-                                            <span class="text-muted small">{{ $tglText }} @if (!empty($k['waktu']))
-                                                    • {{ $k['waktu'] }}
-                                                @endif
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="col-12">
-                                    <div class="text-muted">Belum ada jadwal yang bisa ditampilkan.</div>
-                                </div>
-                            @endforelse
-                        </div>
-
-                        <div class="text-muted small mt-3">
-                            *Kalau mau versi kalender penuh, kamu bisa pasang embed Google Calendar via controller ke
-                            variabel <code>$googleCalendarEmbed</code>.
-                        </div>
-                    @endif
+                    {{-- ✅ FullCalendar container --}}
+                    <div id="kegiatanCalendar" style="min-height:650px"></div>
                 </div>
             </section>
 
-            {{-- GALERI --}}
-            <section id="galeri" class="mb-5">
-                <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-                    <div>
-                        <h2 class="fw-bold mb-1 prodi-h3">Galeri Dokumentasi</h2>
-                        <p class="text-muted mb-0">Foto kegiatan sebelumnya (opsional).</p>
-                    </div>
-                </div>
-
-                @if (count($gallery))
-                    <div class="row g-3">
-                        @foreach ($gallery as $g)
-                            @php
-                                $img = $g['img'] ?? $heroCoverFallback;
-                                $cap = $g['caption'] ?? 'Dokumentasi';
-                            @endphp
-                            <div class="col-6 col-md-4 col-lg-3">
-                                <a href="javascript:void(0)" class="kegiatan-gallery" data-img="{{ $img }}"
-                                    data-cap="{{ e($cap) }}">
-                                    <div class="prodi-card p-2" style="overflow:hidden;">
-                                        <img src="{{ $img }}" alt="{{ $cap }}"
-                                            style="width:100%; height:170px; object-fit:cover; border-radius:14px;"
-                                            onerror="this.src='{{ $heroCoverFallback }}'; this.onerror=null;">
-                                    </div>
-                                </a>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    {{-- Modal sederhana --}}
-                    <div class="modal fade" id="galleryModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                            <div class="modal-content" style="border-radius:18px; overflow:hidden;">
-                                <div class="modal-body p-0">
-                                    <img id="galleryModalImg" src="" alt="Dokumentasi"
-                                        style="width:100%; height:auto; display:block;">
-                                    <div class="p-3">
-                                        <div class="fw-semibold" id="galleryModalCap">Dokumentasi</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="prodi-card p-4">
-                        <div class="text-muted">Belum ada dokumentasi. Nanti kalau sudah ada, tampil di sini.</div>
-                    </div>
-                @endif
-            </section>
-
-            {{-- FAQ --}}
-            <section id="faq" class="mb-5">
-                <div class="prodi-card p-4 p-lg-5">
-                    <div class="prodi-card-head mb-3">
-                        <div class="prodi-ic"><i class="fa-solid fa-circle-question"></i></div>
-                        <div>
-                            <div class="prodi-card-title">Pertanyaan yang Sering Ditanya</div>
-                            <div class="prodi-card-sub">Biar kamu nggak bingung</div>
-                        </div>
-                    </div>
-
-                    <div class="accordion" id="faqAccordion">
-                        @foreach ($faq as $i => $f)
-                            <div class="accordion-item" style="border-radius:14px; overflow:hidden; margin-bottom:10px;">
-                                <h2 class="accordion-header" id="h{{ $i }}">
-                                    <button class="accordion-button {{ $i ? 'collapsed' : '' }}" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#c{{ $i }}"
-                                        aria-expanded="{{ $i ? 'false' : 'true' }}"
-                                        aria-controls="c{{ $i }}">
-                                        {{ $f['q'] ?? 'Pertanyaan' }}
-                                    </button>
-                                </h2>
-                                <div id="c{{ $i }}"
-                                    class="accordion-collapse collapse {{ $i ? '' : 'show' }}"
-                                    aria-labelledby="h{{ $i }}" data-bs-parent="#faqAccordion">
-                                    <div class="accordion-body text-muted">
-                                        {{ $f['a'] ?? 'Jawaban.' }}
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </section>
-
-            {{-- CTA --}}
-            <section class="prodi-cta p-4 p-lg-5">
-                <div class="row g-3 align-items-center">
-                    <div class="col-lg-8">
-                        <h3 class="fw-bold mb-1">Mau ikut kegiatan berikutnya?</h3>
-                        <p class="text-muted mb-0">Pantau agenda terbaru dan daftar sebelum kuota penuh.</p>
-                    </div>
-                    <div class="col-lg-4 d-flex gap-2 justify-content-lg-end flex-wrap">
-                        <a href="#mendatang" class="btn btn-cta fw-semibold px-4 py-2 w-100 w-lg-auto">
-                            Lihat yang Mendatang <i class="fa-solid fa-arrow-right ms-2"></i>
-                        </a>
-                    </div>
-                </div>
-            </section>
 
         </div>
     </main>
 @endsection
 
+{{-- ✅ taruh di bawah (paling aman pakai @push jika layout punya @stack('scripts')) --}}
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css">
+    <style>
+        /* ===== Container card feel ===== */
+        #kegiatanCalendar.gc-like {
+            background: #fff;
+            border-radius: 20px;
+            padding: 14px;
+            border: 1px solid rgba(15, 23, 42, .08);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, .06);
+        }
+
+        /* ===== Toolbar (Google-ish) ===== */
+        .fc .fc-header-toolbar {
+            margin: 4px 2px 14px !important;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .fc .fc-toolbar-title {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        /* buttons */
+        .fc .fc-button {
+            border-radius: 999px !important;
+            padding: 7px 12px !important;
+            font-weight: 700 !important;
+            border: 1px solid rgba(15, 23, 42, .14) !important;
+            background: #fff !important;
+            box-shadow: 0 1px 0 rgba(15, 23, 42, .04);
+        }
+
+        .fc .fc-button:hover {
+            background: rgba(15, 23, 42, .04) !important;
+        }
+
+        .fc .fc-button:focus {
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, .12) !important;
+        }
+
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background: rgba(37, 99, 235, .10) !important;
+            border-color: rgba(37, 99, 235, .25) !important;
+            color: inherit !important;
+        }
+
+        .fc .fc-button:disabled {
+            opacity: .55;
+        }
+
+        /* ===== Grid look ===== */
+        .fc .fc-scrollgrid,
+        .fc .fc-scrollgrid table {
+            border-color: rgba(15, 23, 42, .08) !important;
+        }
+
+        /* header hari */
+        .fc .fc-col-header-cell {
+            background: rgba(15, 23, 42, .025);
+        }
+
+        .fc .fc-col-header-cell-cushion {
+            padding: 10px 0 !important;
+            font-weight: 800;
+            font-size: 11.5px;
+            letter-spacing: .8px;
+            text-transform: uppercase;
+            color: rgba(15, 23, 42, .55);
+        }
+
+        /* cell */
+        .fc .fc-daygrid-day-frame {
+            padding: 8px;
+            min-height: 120px;
+        }
+
+        .fc .fc-daygrid-day {
+            transition: background .15s ease;
+        }
+
+        .fc .fc-daygrid-day:hover {
+            background: rgba(37, 99, 235, .04);
+        }
+
+        /* angka tanggal */
+        .fc .fc-daygrid-day-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            font-weight: 800;
+            color: rgba(15, 23, 42, .62);
+        }
+
+        /* today highlight lebih halus */
+        .fc .fc-day-today {
+            background: rgba(37, 99, 235, .06) !important;
+        }
+
+        .fc .fc-day-today .fc-daygrid-day-number {
+            background: rgba(37, 99, 235, .14);
+            color: rgba(15, 23, 42, .85);
+        }
+
+        /* ===== Event pill ===== */
+        .fc .fc-daygrid-event {
+            border: 0 !important;
+            border-radius: 999px !important;
+            padding: 3px 10px !important;
+            font-weight: 800;
+            font-size: 12px;
+            line-height: 1.2;
+            box-shadow: 0 1px 0 rgba(15, 23, 42, .08);
+            transition: transform .12s ease, filter .12s ease;
+        }
+
+        .fc .fc-daygrid-event:hover {
+            transform: translateY(-1px);
+            filter: brightness(.98);
+        }
+
+        .fc .fc-daygrid-event .fc-event-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* “+ more” */
+        .fc .fc-daygrid-more-link {
+            font-weight: 800;
+            color: rgba(37, 99, 235, .9);
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            #kegiatanCalendar.gc-like {
+                padding: 12px;
+                border-radius: 16px;
+            }
+
+            .fc .fc-toolbar-title {
+                font-size: 16px;
+            }
+
+            .fc .fc-button {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+            }
+
+            .fc .fc-daygrid-day-frame {
+                min-height: 100px;
+                padding: 7px;
+            }
+        }
+
+        @media (max-width: 576px) {
+
+            /* toolbar jadi 2 baris rapi */
+            .fc .fc-header-toolbar {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .fc .fc-toolbar-chunk {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .fc .fc-toolbar-chunk:first-child {
+                justify-content: space-between;
+            }
+
+            .fc .fc-toolbar-title {
+                font-size: 15px;
+                text-align: center;
+            }
+
+            .fc .fc-daygrid-day-frame {
+                min-height: 88px;
+                padding: 6px;
+            }
+
+            .fc .fc-daygrid-event {
+                font-size: 11.5px;
+                padding: 3px 8px !important;
+            }
+        }
+
+        /* ===== Fix arrow prev / next ===== */
+        .fc .fc-button .fc-icon {
+            color: #1f2937 !important;
+            /* gray-800 */
+            font-size: 14px;
+        }
+
+        .fc .fc-button-primary:not(:disabled) .fc-icon {
+            color: #1f2937 !important;
+        }
+
+        /* hover */
+        .fc .fc-button:hover .fc-icon {
+            color: #111827 !important;
+        }
+
+        /* disabled */
+        .fc .fc-button:disabled .fc-icon {
+            color: #9ca3af !important;
+            /* gray-400 */
+        }
+
+        .fc .fc-button {
+            background: #fff !important;
+        }
+
+        .fc .fc-button:hover {
+            background: rgba(37, 99, 235, .08) !important;
+        }
+
+        .fc .fc-button:active {
+            background: rgba(37, 99, 235, .14) !important;
+        }
+
+        /* ===== FORCE CONSISTENT TOOLBAR BUTTONS ===== */
+        .fc .fc-button {
+            background: #ffffff !important;
+            border: 1px solid rgba(15, 23, 42, .18) !important;
+            color: #1f2937 !important;
+            border-radius: 999px !important;
+            padding: 7px 12px !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, .06) !important;
+            opacity: 1 !important;
+        }
+
+        /* icons (prev / next) */
+        .fc .fc-button .fc-icon {
+            color: #1f2937 !important;
+            font-size: 14px;
+        }
+
+        /* hover */
+        .fc .fc-button:hover {
+            background: rgba(37, 99, 235, .08) !important;
+            border-color: rgba(37, 99, 235, .35) !important;
+        }
+
+        /* active / pressed */
+        .fc .fc-button:active,
+        .fc .fc-button.fc-button-active {
+            background: rgba(37, 99, 235, .16) !important;
+            border-color: rgba(37, 99, 235, .45) !important;
+        }
+
+        /* disabled */
+        .fc .fc-button:disabled {
+            opacity: .45 !important;
+            background: #f9fafb !important;
+            border-color: rgba(15, 23, 42, .12) !important;
+        }
+
+        /* REMOVE ghost background from groups */
+        .fc .fc-button-group {
+            background: transparent !important;
+            border: 0 !important;
+            box-shadow: none !important;
+        }
+
+        /* spacing antar tombol */
+        .fc .fc-button-group>.fc-button {
+            margin: 0 4px !important;
+        }
+    </style>
+@endpush
+
+
+
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script>
-        (function() {
-            // ===== Carousel "mendatang" (mirip dosen) =====
-            const track = document.getElementById('kegiatanTrack');
-            if (track) {
-                const btns = document.querySelectorAll('[data-kegiatan-dir]');
+        document.addEventListener('DOMContentLoaded', function() {
+            const el = document.getElementById('kegiatanCalendar');
+            if (!el) return;
 
-                btns.forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const dir = btn.getAttribute('data-kegiatan-dir');
-                        const card = track.querySelector('.team-card');
-                        const step = (card?.offsetWidth || 320) + 16;
+            const mq = window.matchMedia('(max-width: 576px)');
 
-                        track.scrollBy({
-                            left: dir === 'next' ? step : -step,
-                            behavior: 'smooth'
-                        });
-                    });
-                });
+            const getToolbar = (mobile) => mobile ? {
+                left: 'prev,next',
+                center: 'title',
+                right: 'today'
+            } : {
+                left: 'today prev,next',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listMonth'
+            };
 
-                function startAuto() {
-                    return setInterval(() => {
-                        const card = track.querySelector('.team-card');
-                        const step = (card?.offsetWidth || 320) + 16;
+            const getInitialView = (mobile) => mobile ? 'listMonth' : 'dayGridMonth';
 
-                        track.scrollBy({
-                            left: step,
-                            behavior: 'smooth'
-                        });
+            let lastIsMobile = mq.matches;
 
-                        if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 10) {
-                            track.scrollTo({
-                                left: 0,
-                                behavior: 'smooth'
-                            });
-                        }
-                    }, 3500);
-                }
+            const calendar = new FullCalendar.Calendar(el, {
+                initialView: getInitialView(lastIsMobile),
+                height: 'auto',
+                locale: 'id',
 
-                let auto = startAuto();
-                track.addEventListener('mouseenter', () => clearInterval(auto));
-                track.addEventListener('mouseleave', () => {
-                    clearInterval(auto);
-                    auto = startAuto();
-                });
-            }
+                nowIndicator: true,
+                dayMaxEvents: true,
+                fixedWeekCount: false,
+                expandRows: true,
 
-            // ===== Filter (search + kategori) =====
-            const searchInput = document.getElementById('kegiatanSearch');
-            const grid = document.getElementById('kegiatanGrid');
-            const countEl = document.getElementById('kegiatanCount');
-            const emptyEl = document.getElementById('kegiatanEmpty');
-            const pillWrap = document.getElementById('kategoriPills');
+                headerToolbar: getToolbar(lastIsMobile),
 
-            let activeKat = 'all';
+                buttonText: {
+                    today: 'Today',
+                    month: 'Month',
+                    week: 'Week',
+                    list: 'List'
+                },
 
-            function setActivePill(kat) {
-                if (!pillWrap) return;
-                pillWrap.querySelectorAll('.kategori-pill').forEach(p => p.classList.remove('active'));
-                const btn = pillWrap.querySelector(`[data-kat="${kat}"]`);
-                if (btn) btn.classList.add('active');
-            }
+                events: "{{ route('kegiatan.events') }}",
 
-            function applyFilter() {
-                if (!grid) return;
-
-                const q = (searchInput?.value || '').trim().toLowerCase();
-                let visible = 0;
-
-                grid.querySelectorAll('.kegiatan-item').forEach(item => {
-                    const judul = item.getAttribute('data-judul') || '';
-                    const kat = item.getAttribute('data-kategori') || '';
-
-                    const okKat = activeKat === 'all' ? true : kat === activeKat;
-                    const okQ = q ? judul.includes(q) : true;
-
-                    const show = okKat && okQ;
-                    item.style.display = show ? '' : 'none';
-                    if (show) visible++;
-                });
-
-                if (countEl) countEl.textContent = String(visible);
-                if (emptyEl) emptyEl.style.display = visible ? 'none' : 'block';
-            }
-
-            if (pillWrap) {
-                pillWrap.addEventListener('click', (e) => {
-                    const btn = e.target.closest('.kategori-pill');
-                    if (!btn) return;
-                    activeKat = btn.getAttribute('data-kat') || 'all';
-                    setActivePill(activeKat);
-                    applyFilter();
-                });
-            }
-
-            if (searchInput) {
-                searchInput.addEventListener('input', applyFilter);
-            }
-
-            // init
-            setActivePill('all');
-            applyFilter();
-
-            // ===== Gallery modal sederhana (butuh Bootstrap JS) =====
-            document.querySelectorAll('.kegiatan-gallery').forEach(el => {
-                el.addEventListener('click', () => {
-                    const img = el.getAttribute('data-img');
-                    const cap = el.getAttribute('data-cap');
-
-                    const modalImg = document.getElementById('galleryModalImg');
-                    const modalCap = document.getElementById('galleryModalCap');
-
-                    if (modalImg) modalImg.src = img || '';
-                    if (modalCap) modalCap.textContent = cap || 'Dokumentasi';
-
-                    const modalEl = document.getElementById('galleryModal');
-                    if (modalEl && window.bootstrap) {
-                        const modal = new bootstrap.Modal(modalEl);
-                        modal.show();
-                    }
-                });
+                eventDisplay: 'block',
             });
-        })();
+
+            calendar.render();
+
+            // ✅ hanya berubah saat breakpoint mobile/desktop BERUBAH (bukan tiap resize kecil)
+            mq.addEventListener('change', (e) => {
+                const isMobile = e.matches;
+                if (isMobile === lastIsMobile) return;
+
+                lastIsMobile = isMobile;
+
+                calendar.setOption('headerToolbar', getToolbar(isMobile));
+                calendar.changeView(getInitialView(isMobile));
+
+                // biar layout rapi setelah switch
+                setTimeout(() => calendar.updateSize(), 50);
+            });
+        });
     </script>
 @endpush

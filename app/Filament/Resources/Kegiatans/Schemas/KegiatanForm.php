@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Kegiatans\Schemas;
 
+use Carbon\Carbon;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -10,6 +12,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Utilities\Set;
+
 
 class KegiatanForm
 {
@@ -18,53 +22,97 @@ class KegiatanForm
         return $schema
             ->components([
                 Section::make('Informasi Kegiatan')
+                    ->icon('heroicon-o-calendar-days')
+                    ->description('Kelola data kegiatan fakultas')
                     ->schema([
                         // COVER IMAGE
                         FileUpload::make('cover_image')
-                            ->label('Cover Image')
+                            ->label('Cover Kegiatan')
                             ->image()
                             ->directory('activities')
                             ->imagePreviewHeight('200')
                             ->acceptedFileTypes(['image/jpeg'])
-                            ->maxSize(1024) // 1 MB
-                            ->helperText('Format JPG, maksimal 1MB')
+                            ->maxSize(1024) // 1MB (KB)
+                            ->helperText('Format JPG/JPEG, maksimal 1MB')
                             ->nullable(),
 
-                        // TYPE
+                        // TYPE (KATEGORI)
                         Select::make('type')
                             ->label('Jenis Kegiatan')
                             ->options([
-                                'Seminar' => 'Seminar',
+                                'Seminar'   => 'Seminar',
                                 'Kompetisi' => 'Kompetisi',
-                                'Workshop' => 'Workshop',
+                                'Workshop'  => 'Workshop',
                             ])
                             ->required()
-                            ->native(false),
+                            ->native(false)
+                            ->prefixIcon('heroicon-o-tag')
+                            ->helperText('Dipakai sebagai kategori/filter kegiatan.'),
 
+                        // DATE
                         // DATE
                         DatePicker::make('activity_date')
                             ->label('Tanggal Kegiatan')
                             ->required()
-                            ->closeOnDateSelection(),
+                            ->closeOnDateSelection()
+                            ->prefixIcon('heroicon-o-calendar')
+                            ->helperText('Menentukan status otomatis: mendatang / selesai.')
+                            ->live() // penting!
+                            ->afterStateUpdated(function (Set $set, $state) {
+                                if (! $state) return;
+
+                                $set(
+                                    'status_kegiatan',
+                                    Carbon::parse($state)->isFuture() || Carbon::parse($state)->isToday()
+                                        ? 'mendatang'
+                                        : 'selesai'
+                                );
+                            }),
+
+                        // STATUS KEGIATAN (AUTO)
+                        Select::make('status_kegiatan')
+                            ->label('Status Kegiatan')
+                            ->options([
+                                'mendatang' => 'Mendatang',
+                                'selesai'   => 'Selesai',
+                            ])
+                            ->disabled()      // tidak bisa diedit manual
+                            ->dehydrated()    // tetap disimpan ke DB
+                            ->helperText('Status ditentukan otomatis dari tanggal kegiatan.')
+                            ->default('mendatang'),
+
 
                         // TITLE
                         TextInput::make('title')
-                            ->label('Judul')
+                            ->label('Judul Kegiatan')
                             ->required()
                             ->maxLength(150)
-                            ->placeholder('Contoh: Roadmap Karier Data & AI'),
+                            ->placeholder('Contoh: Roadmap Karier Data & AI')
+                            ->prefixIcon('heroicon-o-pencil-square'),
 
-                        // EXCERPT
+                        // EXCERPT (Textarea TIDAK support prefixIcon di v5)
                         Textarea::make('excerpt')
                             ->label('Deskripsi Singkat')
                             ->rows(3)
                             ->maxLength(255)
+                            ->placeholder('Ringkasan singkat kegiatan (muncul di kartu)')
+                            ->helperText('📝 Ditampilkan pada kartu kegiatan.')
                             ->nullable(),
 
-                        // STATUS
+                        // WARNA KALENDER (HANYA kalau kolomnya ada di DB)
+                        // Kalau kamu belum jadi menambah kolom warna_kalender, hapus block ini.
+                        ColorPicker::make('warna_kalender')
+                            ->label('Warna Kalender (Opsional)')
+                            ->helperText('Jika kosong, warna otomatis: mendatang biru, selesai abu.')
+                            ->nullable(),
+
+                        // STATUS AKTIF
                         Toggle::make('status_aktif')
                             ->label('Status Aktif')
-                            ->default(true),
+                            ->default(true)
+                            ->onIcon('heroicon-o-check-circle')
+                            ->offIcon('heroicon-o-x-circle')
+                            ->helperText('Nonaktifkan untuk menyembunyikan kegiatan.'),
                     ])
                     ->columns(2),
             ]);

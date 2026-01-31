@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    // new
+    'kegiatan_calendar' => [
+        'embed_url' => env('KEGIATAN_CALENDAR_EMBED_URL'),
+    ],
 
 ];

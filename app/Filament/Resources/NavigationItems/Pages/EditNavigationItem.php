@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\Kegiatans\Pages;
+namespace App\Filament\Resources\NavigationItems\Pages;
 
-use App\Filament\Resources\Kegiatans\KegiatanResource;
+use App\Filament\Resources\NavigationItems\NavigationItemResource;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Support\Carbon;
 
-class EditKegiatan extends EditRecord
+class EditNavigationItem extends EditRecord
 {
-    protected static string $resource = KegiatanResource::class;
+    protected static string $resource = NavigationItemResource::class;
 
     protected function getRedirectUrl(): string
     {
@@ -21,7 +20,7 @@ class EditKegiatan extends EditRecord
     {
         return Notification::make()
             ->title('Berhasil')
-            ->body('Data Kegiatan berhasil diperbarui.')
+            ->body('Data Navigation berhasil diperbarui.')
             ->success();
     }
 
@@ -48,15 +47,5 @@ class EditKegiatan extends EditRecord
                 ->icon('heroicon-o-x-mark')
                 ->outlined()
         ];
-    }
-
-    protected function mutateFormDataBeforeSave(array $data): array
-    {
-        if (!empty($data['activity_date'])) {
-            $date = Carbon::parse($data['activity_date']);
-            $data['status_kegiatan'] = ($date->isFuture() || $date->isToday()) ? 'mendatang' : 'selesai';
-        }
-
-        return $data;
     }
 }

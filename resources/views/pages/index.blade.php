@@ -66,7 +66,8 @@
                                     <div class="col-6 col-md-4">
                                         <div
                                             class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
-                                            <div class="fw-bold fs-5">{{ $hero->laboratory_count }}</div>
+                                            <div class="fw-bold fs-5 counter" data-count="{{ $hero->laboratory_count }}">0
+                                            </div>
                                             <div class="opacity-75 small">Laboratorium</div>
                                         </div>
                                     </div>
@@ -76,7 +77,8 @@
                                     <div class="col-6 col-md-4">
                                         <div
                                             class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
-                                            <div class="fw-bold fs-5">{{ $hero->lecturer_practitioner_count }}</div>
+                                            <div class="fw-bold fs-5 counter"
+                                                data-count="{{ $hero->lecturer_practitioner_count }}">0</div>
                                             <div class="opacity-75 small">Dosen & Praktisi</div>
                                         </div>
                                     </div>
@@ -86,7 +88,8 @@
                                     <div class="col-6 col-md-4">
                                         <div
                                             class="p-3 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
-                                            <div class="fw-bold fs-5">{{ $hero->industry_partner_count }}</div>
+                                            <div class="fw-bold fs-5 counter"
+                                                data-count="{{ $hero->industry_partner_count }}">0</div>
                                             <div class="opacity-75 small">Mitra Industri</div>
                                         </div>
                                     </div>
@@ -244,27 +247,100 @@
                         <h2 class="fw-bold mb-1">Kegiatan Terbaru</h2>
                         <p class="text-muted mb-0">Update event, seminar, dan prestasi mahasiswa.</p>
                     </div>
-                    <a href="#" class="btn btn-see-all fw-semibold px-3 py-2">
+
+                    {{-- arahkan ke halaman kegiatan --}}
+                    <a href="{{ url('/kegiatan') }}" class="btn btn-see-all fw-semibold px-3 py-2">
                         Lihat Semua <i class="fa-solid fa-arrow-right ms-2"></i>
                     </a>
                 </div>
 
                 <div class="row g-4">
                     @foreach ($Kegiatan as $k)
+                        @php
+                            $img = !empty($k->cover_image) ? asset('storage/' . $k->cover_image) : null;
+
+                            // status label (sesuaikan mapping ini dengan value di DB kamu)
+                            $status = $k->status_kegiatan ?? null; // misal: 'aktif','draft','selesai'
+                            $statusText = match ($status) {
+                                'aktif' => 'Aktif',
+                                'draft' => 'Draft',
+                                'selesai' => 'Selesai',
+                                default => null,
+                            };
+
+                            // badge warna status
+                            $statusClass = match ($status) {
+                                'aktif' => 'bg-success',
+                                'draft' => 'bg-secondary',
+                                'selesai' => 'bg-dark',
+                                default => 'bg-light text-dark',
+                            };
+
+                            // warna kalender opsional (kalau ada)
+                            $typeColor = $k->warna_kalender ?? null;
+                        @endphp
+
                         <div class="col-md-6 col-lg-4">
-                            <div class="card rounded-4 h-100 overflow-hidden">
-                                @if (!empty($k->cover_image))
-                                    <img src="{{ asset('storage/' . $k->cover_image) }}" class="img-fluid" alt="Kegiatan">
-                                @endif
-                                <div class="card-body p-4">
-                                    <div class="text-muted small mb-2">
-                                        {{ $k->type ?? '' }} @if (!empty($k->activty_date))
-                                            • {{ $k->activty_date }}
+                            <div class="card kegiatan-card rounded-4 h-100 overflow-hidden border-0 shadow-sm">
+                                {{-- Cover --}}
+                                <div class="kegiatan-cover position-relative">
+                                    @if ($img)
+                                        <img src="{{ $img }}" class="w-100 h-100 object-fit-cover"
+                                            alt="{{ $k->title }}">
+                                    @else
+                                        <div
+                                            class="kegiatan-cover-fallback d-flex align-items-center justify-content-center">
+                                            <i class="fa-regular fa-images fs-1 opacity-50"></i>
+                                        </div>
+                                    @endif
+
+                                    {{-- overlay --}}
+                                    <div class="kegiatan-overlay"></div>
+
+                                    {{-- badges --}}
+                                    <div class="position-absolute top-0 start-0 p-3 d-flex gap-2 flex-wrap">
+                                        @if (!empty($k->type))
+                                            <span class="badge rounded-pill px-3 py-2"
+                                                style="{{ $typeColor ? 'background:' . e($typeColor) . ';' : '' }}">
+                                                <i class="fa-solid fa-tag me-1"></i> {{ $k->type }}
+                                            </span>
+                                        @endif
+
+                                        @if (!empty($statusText))
+                                            <span class="badge rounded-pill px-3 py-2 {{ $statusClass }}">
+                                                <i class="fa-solid fa-circle-check me-1"></i> {{ $statusText }}
+                                            </span>
                                         @endif
                                     </div>
-                                    <h5 class="fw-bold">{{ $k->title }}</h5>
+                                </div>
+
+                                <div class="card-body p-4">
+                                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                        <div class="text-muted small">
+                                            @if (!empty($k->activity_date))
+                                                <i class="fa-regular fa-calendar me-1"></i>
+                                                {{ \Illuminate\Support\Carbon::parse($k->activity_date)->translatedFormat('d M Y') }}
+                                            @endif
+                                        </div>
+
+                                        {{-- status_aktif toggle --}}
+                                        @if (!is_null($k->status_aktif))
+                                            <span class="small {{ $k->status_aktif ? 'text-success' : 'text-danger' }}">
+                                                <i
+                                                    class="fa-solid {{ $k->status_aktif ? 'fa-bolt' : 'fa-ban' }} me-1"></i>
+                                                {{ $k->status_aktif ? 'Publish' : 'Nonaktif' }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <h5 class="fw-bold text-dark mb-2 kegiatan-title">
+                                        {{ $k->title }}
+                                    </h5>
+
                                     @if (!empty($k->excerpt))
-                                        <p class="text-muted mb-0">{{ $k->excerpt }}</p>
+                                        <p class="text-muted mb-0 kegiatan-excerpt">
+                                            {{ $k->excerpt }}
+                                        </p>
                                     @endif
                                 </div>
                             </div>
@@ -275,47 +351,86 @@
         </section>
     @endif
 
+
     @push('styles')
         <style>
-            #kegiatan .card img {
-                height: 200px;
-                object-fit: cover;
+            .kegiatan-card {
+                transition: transform .18s ease, box-shadow .18s ease;
             }
 
-            #kegiatan .card {
-                transition: transform .2s ease, box-shadow .2s ease;
+            .kegiatan-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 1rem 2rem rgba(0, 0, 0, .12) !important;
             }
 
-            #kegiatan .card:hover {
-                transform: translateY(-6px);
-                box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
+            .kegiatan-cover {
+                height: 210px;
+                background: #f4f6f8;
+            }
+
+            .kegiatan-cover img {
+                display: block;
+            }
+
+            .kegiatan-cover-fallback {
+                height: 210px;
+                background: linear-gradient(135deg, #f0f2f5, #e9ecef);
+            }
+
+            .kegiatan-overlay {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to bottom, rgba(0, 0, 0, .05), rgba(0, 0, 0, .55));
+            }
+
+            .kegiatan-title {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .kegiatan-excerpt {
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
             }
         </style>
     @endpush
 
 
     {{-- PMB CTA --}}
-    <section class="py-5" id="pmb">
-        <div class="container">
-            <div class="p-4 p-md-5 rounded-4 border bg-white shadow-sm">
-                <div class="row align-items-center g-3">
-                    <div class="col-lg-8">
-                        <h3 class="fw-bold mb-2">Penerimaan Mahasiswa Baru</h3>
-                        <p class="text-muted mb-0">
-                            Mulai perjalananmu di dunia teknologi. Cek persyaratan, jadwal, dan jalur seleksi sekarang.
-                        </p>
-                    </div>
-                    <div class="col-lg-4 text-lg-end">
-                        <a href="#" class="btn btn-cta fw-semibold px-4 py-2 w-100 w-lg-auto">
-                            Daftar Sekarang <i class="fa-solid fa-arrow-right ms-2"></i>
-                        </a>
+    @if ($hero)
+        <section class="py-5" id="pmb">
+            <div class="container">
+                <div class="p-4 p-md-5 rounded-4 border bg-white shadow-sm">
+                    <div class="row align-items-center g-3">
+                        <div class="col-lg-8">
+                            <h3 class="fw-bold mb-2">Penerimaan Mahasiswa Baru</h3>
+                            <p class="text-muted mb-0">
+                                Mulai perjalananmu di dunia teknologi. Cek persyaratan, jadwal, dan jalur seleksi sekarang.
+                            </p>
+                        </div>
 
-                        <div class="text-muted small mt-2">Butuh bantuan? Lihat informasi kontak di bawah.</div>
+                        <div class="col-lg-4 text-lg-end">
+                            @if (!empty($hero->primary_button_url))
+                                <a href="{{ $hero->primary_button_url }}"
+                                    class="btn btn-cta fw-semibold px-4 py-2 w-100 w-lg-auto">
+                                    Daftar Sekarang <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </a>
+                            @endif
+
+                            <div class="text-muted small mt-2">
+                                Butuh bantuan? Lihat informasi kontak di bawah.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    @endif
+
 
     {{-- TESTIMONI --}}
     @if (!empty($Testimoni) && $Testimoni->isNotEmpty())
@@ -550,5 +665,26 @@
                 }, 3500);
             });
         })();
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const counters = document.querySelectorAll('.counter');
+
+            counters.forEach(counter => {
+                const target = +counter.getAttribute('data-count');
+                const duration = 1200; // ms
+                const stepTime = Math.max(Math.floor(duration / target), 20);
+                let current = 0;
+
+                const timer = setInterval(() => {
+                    current++;
+                    counter.innerText = current;
+
+                    if (current >= target) {
+                        counter.innerText = target;
+                        clearInterval(timer);
+                    }
+                }, stepTime);
+            });
+        });
     </script>
 @endpush

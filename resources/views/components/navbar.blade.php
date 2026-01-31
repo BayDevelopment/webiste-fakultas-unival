@@ -42,34 +42,39 @@
                         <div
                             class="dropdown-menu dropdown-card shadow-lg border-0 p-0 dropdown-menu-end dropdown-scroll">
                             @php
-                                $prodiSlug = request()->route('slug'); // ambil {slug} dari route profil.prodi
+                                // Kalau route pakai model binding {programStudi:slug}, ini yang benar:
+                                $currentSlug = request()->route('programStudi')?->slug;
+
+                                // Kalau route kamu masih {slug}, pakai ini:
+                                // $currentSlug = request()->route('slug');
+
                             @endphp
+
                             <div class="p-3 dropdown-scroll-body">
-                                <!-- TEKNIK INFORMATIKA -->
-                                <div class="dropdown-title">Teknik Informatika</div>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $prodiSlug === 'teknik-informatika' ? 'active' : '' }}"
-                                    href="{{ route('profil.prodi', ['slug' => 'teknik-informatika']) }}">
-                                    Profil Prodi <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $prodiSlug === 'teknik-informatika' && request()->routeIs('prodi.akreditasi') ? 'active' : '' }}"
-                                    href="{{ route('sertifikat.akreditasi') }}">
-                                    Akreditasi <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                                @foreach ($navProdi as $p)
+                                    <div class="dropdown-title">{{ $p->nama_program_studi }}</div>
 
-                                <hr class="my-3">
+                                    {{-- Profil Prodi --}}
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between
+                                     {{ request()->routeIs('profil.prodi') && $currentSlug === $p->slug ? 'active' : '' }}"
+                                        href="{{ route('profil.prodi', ['programStudi' => $p->slug]) }}">
+                                        Profil Prodi <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
 
-                                <!-- MANAJEMEN INFORMATIKA -->
-                                <div class="dropdown-title">Manajemen Informatika</div>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $prodiSlug === 'manajemen-informatika' ? 'active' : '' }}"
-                                    href="{{ route('profil.prodi', ['slug' => 'manajemen-informatika']) }}">
-                                    Profil Prodi <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $prodiSlug === 'manajemen-informatika' && request()->routeIs('prodi.akreditasi') ? 'active' : '' }}"
-                                    href="{{ route('sertifikat.akreditasi') }}">
-                                    Akreditasi <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                                    {{-- Akreditasi (kalau memang per-prodi) --}}
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between
+                                        {{ request()->routeIs('prodi.akreditasi') && $currentSlug === $p->slug ? 'active' : '' }}"
+                                        href="{{ route('prodi.akreditasi', ['programStudi' => $p->slug]) }}">
+                                        Akreditasi <i class="fa-solid fa-arrow-right"></i>
+                                    </a>
+
+                                    @if (!$loop->last)
+                                        <hr class="my-3">
+                                    @endif
+                                @endforeach
                             </div>
                         </div>
+
 
                     </li>
 
@@ -84,87 +89,66 @@
                     </li>
 
                     {{-- LAYANAN (Dropdown Card) --}}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle d-inline-flex align-items-center gap-2" href="#"
-                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Layanan <i class="fa-solid fa-chevron-down fa-xs"></i>
-                        </a>
+                    @php
+                        /**
+                         * $navs : Collection groupedBy group_key
+                         * setiap item = NavLink
+                         */
 
-                        <div
-                            class="dropdown-menu dropdown-card dropdown-card-scroll shadow-lg border-0 p-0 dropdown-menu-end">
-                            <div class="p-3">
-                                <div class="dropdown-title">Portal</div>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                    href="#">
-                                    SIAKAD <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                        // ambil hanya group yang punya minimal 1 item visible
+                        $groups = $navs
+                            ->map(fn($items) => $items->filter(fn($i) => $i->is_visible ?? true))
+                            ->filter(fn($items) => $items->isNotEmpty())
+                            ->sortBy(fn($items) => $items->first()->group_order ?? 0);
+                    @endphp
 
-                                <hr class="my-3">
+                    @if ($groups->isNotEmpty())
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-inline-flex align-items-center gap-2" href="#"
+                                role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Layanan <i class="fa-solid fa-chevron-down fa-xs"></i>
+                            </a>
 
-                                <div class="dropdown-title">Kuisioner</div>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ request()->route('slug') == 'dosen' ? 'active' : '' }}"
-                                    href="{{ route('kuisioner', ['slug' => 'dosen']) }}">
-                                    Kuisioner Dosen <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                            <div
+                                class="dropdown-menu dropdown-card dropdown-card-scroll shadow-lg border-0 p-0 dropdown-menu-end">
+                                <div class="p-3">
 
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ request()->route('slug') == 'mahasiswa' ? 'active' : '' }}"
-                                    href="{{ route('kuisioner', ['slug' => 'mahasiswa']) }}">
-                                    Kuisioner Mahasiswa <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                                    @php $firstGroup = true; @endphp
 
-                                <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSeltINvUdcoloDYU0hEZLRVWa5yZa9rdp0YKMxssdii987R0g/viewform"
-                                    target="_blank">
-                                    Lembar Kendali <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                                    @foreach ($groups as $items)
+                                        @if (!$firstGroup)
+                                            <hr class="my-3">
+                                        @endif
+                                        @php $firstGroup = false; @endphp
 
-                                <hr class="my-3">
+                                        <div class="dropdown-title">
+                                            {{ $items->first()->group_label }}
+                                        </div>
 
-                                <div class="dropdown-title">E-Surat</div>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSdejhansR6cRQ6-GpCx27mDwVB_sdm3z10e_1XIBRMovmKIMg/viewform"
-                                    target="_blank">
-                                    Pengajuan KKP <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSc7nr-hm9GtRZu7GVGGCkYwvXp0FCQoXq1lzunS6sUgJcIVug/viewform"
-                                    target="_blank">
-                                    Surat Keterangan Aktif <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLSdN3YkvMMgYh0ixIb5a7UNhfSJwD4xtwm2VXSwdwgLUDqrszA/viewform"
-                                    target="_blank">
-                                    Dispensasi KKP <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                                        @foreach ($items as $item)
+                                            @php
+                                                // Tentukan href
+                                                $href = $item->url ?? '#';
 
-                                <hr class="my-3">
+                                                // Cek apakah link ini adalah halaman aktif
+                                                $isActive = $item->url
+                                                    ? request()->is(ltrim($item->url, '/') . '*')
+                                                    : false;
+                                            @endphp
 
-                                <div class="dropdown-title">Download</div>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between"
-                                    href="https://drive.google.com/file/d/1tOGwFLx16mBkQ83VbKVia_0J6l77VOKE/view"
-                                    target="_blank">
-                                    Form Pindah Kelas <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $navlink == 'Pendaftaran Sidang' ? 'active' : '' }}"
-                                    href="{{ route('pendaftaran.sidang') }}">
-                                    Form Sidang (Proposal/Skripsi) <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $navlink == 'Sertifikat Akreditasi' ? 'active' : '' }}"
-                                    href="{{ route('sertifikat.akreditasi') }}">
-                                    Sertifikat Akreditasi <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $navlink == 'Form Bimbingan' ? 'active' : '' }}"
-                                    href="https://docs.google.com/forms/d/e/1FAIpQLScCB5C3QwuzXqcP2sE07A4OhOxkHVHyLuc3OLmLQwwCKYsigw/viewform?usp=sf_link"
-                                    target="_blank">
-                                    Surat Izin Penelitian <i class="fa-solid fa-arrow-right"></i>
-                                </a>
-                                <a class="dropdown-item d-flex align-items-center justify-content-between {{ $navlink == 'Form Bimbingan' ? 'active' : '' }}"
-                                    href="{{ route('form.bimbingan') }}">
-                                    Form Bimbingan <i class="fa-solid fa-arrow-right"></i>
-                                </a>
+                                            <a class="dropdown-item d-flex align-items-center justify-content-between {{ $isActive ? 'active' : '' }}"
+                                                href="{{ $href }}"
+                                                @if ($item->is_external) target="_blank" rel="noopener noreferrer" @endif>
+                                                {{ $item->label }}
+                                                <i class="fa-solid fa-arrow-right"></i>
+                                            </a>
+                                        @endforeach
+                                    @endforeach
+
+                                </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    @endif
 
                 </ul>
             </div>

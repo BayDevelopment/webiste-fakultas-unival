@@ -133,6 +133,59 @@
                     </div>
                 </section>
 
+                {{-- FAQS --}}
+                @php
+                    $hasFaqs = !empty($FaqsData) && $FaqsData->isNotEmpty();
+                @endphp
+
+                @if ($hasFaqs)
+                    <section id="faq" class="mb-5">
+                        <div class="prodi-card p-4 p-lg-5">
+                            <div class="prodi-card-head mb-3">
+                                <div class="prodi-ic"><i class="fa-solid fa-circle-question"></i></div>
+                                <div>
+                                    <div class="prodi-card-title">FAQ</div>
+                                    <div class="prodi-card-sub">Jawaban cepat untuk pertanyaan umum</div>
+                                </div>
+                            </div>
+
+                            <div class="accordion" id="faqAccordion">
+                                @foreach ($FaqsData as $i => $faq)
+                                    @php
+                                        $q = $faq->question ?? null;
+                                        $a = $faq->answer ?? null;
+                                    @endphp
+
+                                    @continue(blank($q) || blank($a))
+
+                                    <div class="accordion-item mb-2">
+                                        <h2 class="accordion-header" id="faqHeading{{ $i }}">
+                                            <button class="accordion-button {{ $i !== 0 ? 'collapsed' : '' }}"
+                                                type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#faqCollapse{{ $i }}"
+                                                aria-expanded="{{ $i === 0 ? 'true' : 'false' }}"
+                                                aria-controls="faqCollapse{{ $i }}">
+                                                {{ $q }}
+                                            </button>
+                                        </h2>
+
+                                        <div id="faqCollapse{{ $i }}"
+                                            class="accordion-collapse collapse {{ $i === 0 ? 'show' : '' }}"
+                                            aria-labelledby="faqHeading{{ $i }}" data-bs-parent="#faqAccordion">
+                                            <div class="accordion-body">
+                                                {!! nl2br(e($a)) !!}
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                        </div>
+                    </section>
+                @endif
+
+
+
                 {{-- CTA --}}
                 <section class="prodi-cta p-4 p-lg-5">
                     <div class="row g-3 align-items-center">

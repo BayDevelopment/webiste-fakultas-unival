@@ -15,6 +15,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class KegiatansTable
 {
@@ -22,44 +23,54 @@ class KegiatansTable
     {
         return $table
             ->columns([
-                // IMAGE
+
                 ImageColumn::make('cover_image')
                     ->label('Cover')
-                    ->square()
                     ->circular()
-                    ->size(60),
+                    ->size(56)
+                    ->defaultImageUrl(asset('images/avatar-placeholder.jpg')),
 
-                // TITLE
+
                 TextColumn::make('title')
                     ->label('Judul')
                     ->searchable()
                     ->sortable()
-                    ->limit(40),
+                    ->limit(40)
+                    ->icon('heroicon-o-megaphone'),
 
-                // TYPE
+
                 BadgeColumn::make('type')
                     ->label('Jenis')
-                    ->colors([
-                        'primary' => 'Seminar',
-                        'success' => 'Workshop',
-                        'warning' => 'Kompetisi',
-                    ]),
+                    ->color(fn(string $state): string => match ($state) {
+                        'Seminar'   => 'primary',
+                        'Workshop'  => 'success',
+                        'Kompetisi' => 'warning',
+                        default     => 'gray',
+                    })
+                    ->sortable(),
 
-                // DATE
+
                 TextColumn::make('activity_date')
                     ->label('Tanggal')
                     ->date('d M Y')
                     ->sortable(),
 
-                // STATUS
+
+                BadgeColumn::make('status_kegiatan')
+                    ->label('Status')
+                    ->formatStateUsing(fn(string $state) => ucfirst($state)) // mendatang → Mendatang
+                    ->color(fn(string $state): string => match ($state) {
+                        'mendatang' => 'success',
+                        'selesai'   => 'gray',
+                        default     => 'gray',
+                    })
+                    ->sortable(),
+
+
                 ToggleColumn::make('status_aktif')
                     ->label('Aktif')
                     ->onColor('success')
-                    ->offColor('danger')
-                    ->beforeStateUpdated(function ($record, bool $state): bool {
-                        // return false kalau mau blok update dalam kondisi tertentu
-                        return true;
-                    }),
+                    ->offColor('danger'),
             ])
             ->filters([
                 SelectFilter::make('type')
@@ -75,7 +86,6 @@ class KegiatansTable
                         ->label('Edit')
                         ->icon('heroicon-o-pencil-square')
                         ->color('primary'),
-
                     DeleteAction::make()
                         ->label('Hapus')
                         ->icon('heroicon-o-trash')
@@ -83,12 +93,19 @@ class KegiatansTable
                         ->requiresConfirmation()
                         ->modalHeading('Hapus data?')
                         ->modalDescription('Data yang dihapus tidak bisa dikembalikan.')
+                        ->before(function ($record) {
+                            // hapus file cover jika ada
+                            if ($record->cover_image && Storage::disk('public')->exists($record->cover_image)) {
+                                Storage::disk('public')->delete($record->cover_image);
+                            }
+                        })
                         ->successNotification(
                             Notification::make()
                                 ->title('Terhapus')
-                                ->body('Data berhasil dihapus.')
+                                ->body('Data dan gambar berhasil dihapus.')
                                 ->success()
                         ),
+
                 ])
                     ->label('Aksi')
                     ->icon('heroicon-o-ellipsis-vertical')
