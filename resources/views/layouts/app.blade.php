@@ -24,7 +24,7 @@
         content="{{ $description ?? 'Website resmi Fakultas Ilmu Komputer. Informasi akademik, program studi, berita, agenda, dan layanan.' }}">
     <meta property="og:url" content="{{ $canonical ?? url()->current() }}">
     <meta property="og:site_name" content="Fakultas Ilmu Komputer">
-    <meta property="og:image" content="{{ $ogImage ?? asset('images/og-cover.jpg') }}">
+    <meta property="og:image" content="{{ $ogImage ?? asset('images/logo-unival.webp') }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:locale" content="id_ID">
@@ -34,14 +34,14 @@
     <meta name="twitter:title" content="{{ $title ?? 'Fakultas Ilmu Komputer' }}">
     <meta name="twitter:description"
         content="{{ $description ?? 'Website resmi Fakultas Ilmu Komputer, Universitas Al-Khairiyah.' }}">
-    <meta name="twitter:image" content="{{ $ogImage ?? asset('images/og-cover.jpg') }}">
+    <meta name="twitter:image" content="{{ $ogImage ?? asset('images/logo-unival.webp') }}">
 
     {{-- Optional: theme color for mobile browser --}}
     <meta name="theme-color" content="#0ea5e9">
 
     {{-- Favicons --}}
-    <link rel="icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+    <link rel="icon" href="{{ asset('images/logo-unival.webp') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-unival.webp') }}">
 
     {{-- Assets --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])

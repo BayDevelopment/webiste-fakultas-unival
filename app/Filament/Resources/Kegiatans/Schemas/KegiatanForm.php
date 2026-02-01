@@ -29,12 +29,14 @@ class KegiatanForm
                         FileUpload::make('cover_image')
                             ->label('Cover Kegiatan')
                             ->image()
-                            ->directory('activities')
+                            ->disk('public')                  // ✅ penting
+                            ->directory('activities')         // ✅ folder final
+                            ->visibility('public')            // ✅ supaya URL bisa diakses
                             ->imagePreviewHeight('200')
-                            ->acceptedFileTypes(['image/jpeg'])
-                            ->maxSize(1024) // 1MB (KB)
+                            ->acceptedFileTypes(['image/jpeg', 'image/jpg']) // ✅ jaga-jaga
+                            ->maxSize(1024)
                             ->helperText('Format JPG/JPEG, maksimal 1MB')
-                            ->nullable(),
+                            ->preserveFilenames(),            // opsional, tapi membantu
 
                         // TYPE (KATEGORI)
                         Select::make('type')
