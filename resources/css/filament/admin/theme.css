@@ -1,0 +1,70 @@
+@import "tailwindcss";
+@import "../../../../vendor/filament/filament/resources/css/theme.css";
+
+@source "../../../../app/Filament/**/*";
+@source "../../../../resources/views/filament/**/*";
+
+/* ===== TIMELINE GROUP ===== */
+.fi-sidebar-group.nav-timeline .fi-sidebar-group-items {
+    position: relative;
+}
+
+/* vertical rail */
+.fi-sidebar-group.nav-timeline .fi-sidebar-group-items::before {
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 14px;
+    bottom: 14px;
+    width: 2px;
+    border-radius: 9999px;
+    background: rgb(var(--fi-color-gray-200, 203 213 225) / 0.85);
+    pointer-events: none;
+}
+
+/* link spacing */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a {
+    position: relative;
+    padding-left: 42px !important;
+}
+
+/* ===== DOT (DEFAULT: HIDDEN) ===== */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a::after {
+    content: "";
+    position: absolute;
+    left: 11px; /* 11 + 5 = 16 (center rail) */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 9999px;
+
+    background: rgb(var(--fi-color-primary-600, 249 115 22));
+    opacity: 0; /* ⬅️ default hilang */
+    box-shadow: 0 0 0 4px rgb(var(--fi-color-primary-600, 249 115 22) / 0.18);
+    pointer-events: none;
+
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+}
+
+/* ===== HOVER (MUNCUL) ===== */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a:hover::after {
+    opacity: 0.45;
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* ===== ACTIVE (PALING TEGAS) ===== */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item.fi-active > a::after,
+.fi-sidebar-group.nav-timeline .fi-sidebar-item[aria-current="page"] > a::after,
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a[aria-current="page"]::after,
+.fi-sidebar-group.nav-timeline .fi-sidebar-item[data-active="true"] > a::after {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.08);
+}
+
+/* dark mode rail */
+.dark .fi-sidebar-group.nav-timeline .fi-sidebar-group-items::before {
+    background: rgb(var(--fi-color-gray-700, 51 65 85) / 0.55);
+}

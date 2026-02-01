@@ -19,7 +19,7 @@ class ProgramStudiResource extends Resource
 {
     protected static ?string $model = ProgramStudiModel::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static ?string $recordTitleAttribute = 'nama_program_studi';
 

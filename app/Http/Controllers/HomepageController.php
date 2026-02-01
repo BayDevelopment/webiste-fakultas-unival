@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\about_pages_model;
+use App\Models\ChatWaModel;
 use App\Models\ContactSetting;
 use App\Models\HeroSectionModel;
 use App\Models\JurusanHomeProdiModel;
@@ -35,6 +36,7 @@ class HomepageController extends Controller
         $kegiatan = KegiatanModel::where('status_aktif', true)->orderBy('id')->get();
         $testimoni = TestimonialModel::where('is_active', true)->orderBy('id')->get();
         $contactSet = ContactSetting::where('is_active', true)->first();
+        $DataWa = ChatWaModel::where('is_active', true)->first();
 
         return view('pages.index', [
             'title'   => 'Beranda | Fakultas Ilmu Komputer',
@@ -48,7 +50,8 @@ class HomepageController extends Controller
             'JurusanHome' => $jurusanhome,
             'Kegiatan' => $kegiatan,
             'Testimoni' => $testimoni,
-            'Contact' => $contactSet
+            'Contact' => $contactSet,
+            'Chat' => $DataWa
         ]);
     }
 }

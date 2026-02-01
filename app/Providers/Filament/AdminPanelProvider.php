@@ -2,13 +2,17 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Profile;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
@@ -57,6 +61,20 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->brandName('FIK Control Panel')
-            ->brandLogoHeight('2.5rem');
+            ->brandLogoHeight('2.5rem')
+            ->navigationGroups([
+                NavigationGroup::make('Master Data')
+                    ->extraSidebarAttributes(['class' => 'nav-timeline']),
+                NavigationGroup::make('Settings')
+                    ->extraSidebarAttributes(['class' => 'nav-timeline']),
+            ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
+
+            ->userMenuItems([
+                'profile' => MenuItem::make()
+                    ->label('Profile')
+                    ->url(fn(): string => \App\Filament\Pages\Profile::getUrl())
+                    ->icon('heroicon-o-user'),
+            ]);
     }
 }

@@ -1436,3 +1436,103 @@ a.btn.disabled {
 .wa-send:hover {
     filter: brightness(0.95);
 }
+/* navbar layanan versi mobile */
+/* MOBILE NAV: bikin area menu bisa discroll (iPhone SE aman) */
+@media (max-width: 991.98px) {
+    /* container collapse (isi menu) */
+    .navbar-fik .navbar-collapse {
+        max-height: calc(
+            100vh - 72px
+        ); /* 72px kira2 tinggi navbar, sesuaikan kalau perlu */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* iOS smooth */
+        overscroll-behavior: contain;
+        padding-bottom: 0.75rem;
+    }
+
+    /* dropdown di dalam collapse jangan absolute, biar ikut flow & bisa discroll */
+    .navbar-fik .dropdown-menu {
+        position: static !important;
+        float: none;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    /* dropdown card scroll: lebih pendek di mobile */
+    .dropdown-card-scroll {
+        max-height: 45vh; /* iPhone SE aman */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* -------- */
+.fi-sidebar-group.nav-timeline .fi-sidebar-group-items {
+    position: relative;
+}
+
+/* vertical rail */
+.fi-sidebar-group.nav-timeline .fi-sidebar-group-items::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    top: 18px;
+    bottom: 18px;
+    width: 2px;
+    border-radius: 9999px;
+    background: rgb(var(--fi-color-gray-200, 203 213 225) / 0.85);
+}
+
+/* item wrapper */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item {
+    position: relative;
+}
+
+/* link item */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a {
+    position: relative;
+    padding-left: 38px !important;
+}
+
+/* ===== DOT DEFAULT ===== */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translateY(-50%);
+    border-radius: 9999px;
+
+    background: rgb(var(--fi-color-gray-400, 148 163 184));
+    opacity: 0.55;
+    box-shadow: 0 0 0 4px rgb(var(--fi-color-gray-400, 148 163 184) / 0.12);
+
+    transition:
+        transform 0.18s ease,
+        opacity 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+/* ===== HOVER ===== */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a:hover::after {
+    opacity: 0.8;
+    transform: translateY(-50%) scale(1.06);
+    box-shadow: 0 0 0 4px rgb(var(--fi-color-gray-400, 148 163 184) / 0.18);
+}
+
+/* ===== ACTIVE (AUTO PRIMARY FILAMENT) ===== */
+.fi-sidebar-group.nav-timeline .fi-sidebar-item.fi-active > a::after,
+.fi-sidebar-group.nav-timeline .fi-sidebar-item[aria-current="page"] > a::after,
+.fi-sidebar-group.nav-timeline .fi-sidebar-item > a[aria-current="page"]::after,
+.fi-sidebar-group.nav-timeline .fi-sidebar-item[data-active="true"] > a::after {
+    background: rgb(var(--fi-color-primary-600, 249 115 22));
+    opacity: 1;
+    box-shadow: 0 0 0 4px rgb(var(--fi-color-primary-600, 249 115 22) / 0.18);
+}
+
+/* ===== DARK MODE RAIL ===== */
+.dark .fi-sidebar-group.nav-timeline .fi-sidebar-group-items::before {
+    background: rgb(var(--fi-color-gray-700, 51 65 85) / 0.55);
+}

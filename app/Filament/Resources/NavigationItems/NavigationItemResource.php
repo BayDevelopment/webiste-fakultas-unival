@@ -19,7 +19,7 @@ class NavigationItemResource extends Resource
 {
     protected static ?string $model = NavlinkModal::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-bars-3';
 
     protected static ?string $recordTitleAttribute = 'group_key';
 

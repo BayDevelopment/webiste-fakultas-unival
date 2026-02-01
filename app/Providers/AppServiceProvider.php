@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\ChatWaModel;
 use App\Models\NavlinkModal;
 use App\Models\ProgramStudiModel;
 use Illuminate\Support\Facades\View;
@@ -40,5 +41,7 @@ class AppServiceProvider extends ServiceProvider
                     ->groupBy('group_key')
             );
         });
+        // chetwamodel
+        View::share('Chat', ChatWaModel::where('is_active', true)->first());
     }
 }

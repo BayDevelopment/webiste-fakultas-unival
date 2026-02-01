@@ -68,49 +68,52 @@
 
     @include('components.footer')
 
-    {{-- Floating WhatsApp Widget (GLOBAL) --}}
+
     @php
-        $waNumber = $waNumber ?? '6282122489574';
+    $waNumber = ($Chat ?? null)?->no_whatsapp;
     @endphp
 
-    <div id="waWidget" class="wa-widget">
+    @if ($waNumber)
+        {{-- Floating WhatsApp Widget --}}
+        <div id="waWidget" class="wa-widget">
 
-        {{-- Toggle Button --}}
-        <button id="waToggle" class="wa-toggle d-none" type="button">
-            <i class="fa-brands fa-whatsapp"></i>
-        </button>
+            <button id="waToggle" class="wa-toggle" type="button">
+                <i class="fa-brands fa-whatsapp"></i>
+            </button>
 
-        {{-- Card --}}
-        <div id="waCard" class="wa-card shadow">
+            <div id="waCard" class="wa-card shadow">
 
-            <div class="wa-header">
-                <div class="wa-title">
-                    <strong>Admin</strong>
-                    <small>Online</small>
-                </div>
+                <div class="wa-header">
+                    <div class="wa-title">
+                        <strong>{{ $Chat->nama ?? 'Admin' }}</strong>
+                        <small>{{ $Chat->jabatan ?? 'Online' }}</small>
+                    </div>
 
-                <button id="waClose" class="wa-close" type="button">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="wa-body">
-                <div class="wa-bubble wa-left">
-                    Halo 👋 ada yang bisa kami bantu?
-                </div>
-            </div>
-
-            <div class="wa-footer">
-                <form id="waForm" class="wa-form" data-phone="{{ $waNumber }}">
-                    <input type="text" id="waMessage" class="wa-input" placeholder="Ketik pesan..." required>
-                    <button class="wa-send" type="submit">
-                        <i class="fa-solid fa-paper-plane"></i>
+                    <button id="waClose" class="wa-close" type="button">
+                        <i class="fa-solid fa-xmark"></i>
                     </button>
-                </form>
-            </div>
+                </div>
 
+                <div class="wa-body">
+                    <div class="wa-bubble wa-left">
+                        Halo 👋 ada yang bisa kami bantu?
+                    </div>
+                </div>
+
+                <div class="wa-footer">
+                    <form id="waForm" class="wa-form" data-phone="{{ $waNumber }}">
+                        <input type="text" id="waMessage" class="wa-input" placeholder="Ketik pesan..." required>
+                        <button class="wa-send" type="submit">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
         </div>
-    </div>
+    @endif
+
+
 
 
     @stack('scripts')
