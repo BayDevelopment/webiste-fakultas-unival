@@ -22,17 +22,26 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+            fn() => view('filament.auth.footer')
+        );
         return $panel
             ->default()
             ->id('admin')
             ->path('admin')
             ->font('poppins')
             ->login()
+            ->passwordReset()
+            ->authPasswordBroker('users')
             ->colors([
                 'primary' => Color::Amber,
             ])

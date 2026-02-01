@@ -66,8 +66,9 @@ class HeroSectionForm
 
                 TextInput::make('secondary_button_url')
                     ->label('URL Tombol Kedua')
-                    ->placeholder('https://...')
-                    ->url(),
+                    ->placeholder('#, #program, /program-studi, atau https://...')
+                    ->nullable()
+                    ->rule('regex:/^(#([A-Za-z0-9\-_]+)?|\/[A-Za-z0-9\-\/]*|https?:\/\/.+)$/'),
 
                 Toggle::make('is_active')
                     ->label('Aktifkan Hero Section')

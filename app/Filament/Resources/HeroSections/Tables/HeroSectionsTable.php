@@ -12,6 +12,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class HeroSectionsTable
 {
@@ -55,6 +56,11 @@ class HeroSectionsTable
                         ->requiresConfirmation()
                         ->modalHeading('Hapus data?')
                         ->modalDescription('Data yang dihapus tidak bisa dikembalikan.')
+                        ->before(function ($record) {
+                            if ($record->image && Storage::disk('public')->exists($record->image)) {
+                                Storage::disk('public')->delete($record->image);
+                            }
+                        })
                         ->successNotification(
                             Notification::make()
                                 ->title('Terhapus')
