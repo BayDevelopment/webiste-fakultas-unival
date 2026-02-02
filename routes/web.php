@@ -11,6 +11,8 @@ use App\Http\Controllers\ProdiController;
 use App\Http\Controllers\SertifikatAkreditasiController;
 use App\Http\Controllers\TentangKamiController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+
 
 Route::get('/', [HomepageController::class, 'index'])->name('home');
 Route::get('/tentang-kami', [TentangKamiController::class, 'index'])->name('tentang-kami');
@@ -30,3 +32,12 @@ Route::get('/pendaftaran-sidang', [FormSidangController::class, 'index'])
 Route::get('/sertifikat-akreditasi', [SertifikatAkreditasiController::class, 'index'])
     ->name('sertifikat.akreditasi');
 Route::get('/form-bimbingan', [FormBimbinganController::class, 'index'])->name('form.bimbingan');
+
+// Route::get('/test-mail', function () {
+//     Mail::raw('Tes reset password', function ($m) {
+//         $m->to('byalbrldici@gmail.com')
+//             ->subject('Test SMTP');
+//     });
+
+//     return 'OK';
+// });
