@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProgramStudiModel;
 use App\Models\SertifikatAkreditasiModel;
+use App\Models\TimPengelolaModel; // <--- tambahin ini
 use Illuminate\Http\Request;
 
 class ProdiController extends Controller
